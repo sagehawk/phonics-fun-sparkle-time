@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import LetterDisplay from './LetterDisplay';
 import WordLengthSlider from './WordLengthSlider';
 import ConfettiButton from './ConfettiButton';
+import ShowImageButton from './ShowImageButton';
 import SettingsPanel from './SettingsPanel';
 import { Sun, Moon } from 'lucide-react';
 
@@ -16,6 +17,8 @@ const PhonicsApp = () => {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [capsLockActive, setCapsLockActive] = useState(false);
   const [shiftPressed, setShiftPressed] = useState(false);
+  const [showImage, setShowImage] = useState(false);
+  const [lastDisplayedText, setLastDisplayedText] = useState('');
 
   // Audio refs
   const letterSoundRef = useRef<HTMLAudioElement>(null);
@@ -26,6 +29,14 @@ const PhonicsApp = () => {
   const twoLetterWords = ['at', 'in', 'it', 'on', 'of', 'to', 'an', 'as', 'be', 'go', 'he', 'me', 'we', 'up', 'so', 'no', 'my', 'by', 'do', 'or'];
   const threeLetterWords = ['cat', 'dog', 'sun', 'pig', 'fan', 'top', 'cup', 'bag', 'hat', 'pen', 'log', 'web', 'jam', 'box', 'fox', 'bed', 'red', 'leg', 'egg', 'hug'];
   const fourLetterWords = ['frog', 'clap', 'swim', 'flag', 'stop', 'jump', 'play', 'moon', 'star', 'fish', 'bird', 'book', 'cake', 'tree', 'ball', 'duck', 'hand', 'door', 'rain', 'snow'];
+
+  // Letter to image mapping for Mode 1
+  const letterImages = {
+    a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'elephant', f: 'fish', g: 'guitar', h: 'house',
+    i: 'ice cream', j: 'juice', k: 'kite', l: 'lion', m: 'moon', n: 'nest', o: 'orange', p: 'pig',
+    q: 'queen', r: 'rainbow', s: 'sun', t: 'tree', u: 'umbrella', v: 'violin', w: 'water', x: 'xylophone',
+    y: 'yellow', z: 'zebra'
+  };
 
   const getCurrentContent = () => {
     switch(wordLength) {
@@ -40,12 +51,12 @@ const PhonicsApp = () => {
   const currentContent = getCurrentContent();
   const currentItem = currentContent[currentIndex % currentContent.length];
 
-  // Play sound helper
-  const playSound = (audioRef: React.RefObject<HTMLAudioElement>) => {
-    if (audioEnabled && audioRef.current) {
+  // Play sound helper with conditional logic
+  const playSound = (audioRef: React.RefObject<HTMLAudioElement>, force = false) => {
+    if (audioEnabled && audioRef.current && force) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {
-        // Ignore audio play errors (common on first user interaction)
+        // Ignore audio play errors
       });
     }
   };
@@ -64,16 +75,23 @@ const PhonicsApp = () => {
       const key = event.key.toLowerCase();
       if (wordLength === 1 && key.match(/[a-z]/)) {
         const index = key.charCodeAt(0) - 97; // 'a' = 97
-        setCurrentIndex(index);
-        playSound(letterSoundRef);
+        const newIndex = index;
+        
+        // Only play sound if content actually changes
+        if (newIndex !== currentIndex) {
+          setCurrentIndex(newIndex);
+          playSound(letterSoundRef, true);
+        }
       } else if (key === 'arrowright' || key === ' ') {
         event.preventDefault();
-        setCurrentIndex((prev) => (prev + 1) % currentContent.length);
-        playSound(letterSoundRef);
+        const newIndex = (currentIndex + 1) % currentContent.length;
+        setCurrentIndex(newIndex);
+        playSound(letterSoundRef, true);
       } else if (key === 'arrowleft') {
         event.preventDefault();
-        setCurrentIndex((prev) => (prev - 1 + currentContent.length) % currentContent.length);
-        playSound(letterSoundRef);
+        const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
+        setCurrentIndex(newIndex);
+        playSound(letterSoundRef, true);
       }
     };
 
@@ -89,14 +107,14 @@ const PhonicsApp = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [currentContent.length, wordLength, audioEnabled]);
+  }, [currentContent.length, wordLength, audioEnabled, currentIndex]);
 
-  // Mouse wheel zoom functionality
+  // Mouse wheel zoom functionality with increased max zoom
   useEffect(() => {
     const handleWheel = (event) => {
       event.preventDefault();
       const delta = event.deltaY > 0 ? -0.1 : 0.1;
-      setZoomLevel(prev => Math.max(0.5, Math.min(3, prev + delta)));
+      setZoomLevel(prev => Math.max(0.5, Math.min(5, prev + delta))); // Increased max zoom to 5
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
@@ -108,14 +126,17 @@ const PhonicsApp = () => {
     const screenWidth = window.innerWidth;
     const clickX = event.clientX;
     
+    let newIndex;
     if (clickX > screenWidth / 2) {
       // Right side - next
-      setCurrentIndex((prev) => (prev + 1) % currentContent.length);
+      newIndex = (currentIndex + 1) % currentContent.length;
     } else {
       // Left side - previous
-      setCurrentIndex((prev) => (prev - 1 + currentContent.length) % currentContent.length);
+      newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
     }
-    playSound(letterSoundRef);
+    
+    setCurrentIndex(newIndex);
+    playSound(letterSoundRef, true);
   };
 
   // Reset index when word length changes
@@ -123,7 +144,7 @@ const PhonicsApp = () => {
     setCurrentIndex(0);
   }, [wordLength]);
 
-  // Load saved preferences
+  // Load saved preferences on mount
   useEffect(() => {
     const savedWordLength = localStorage.getItem('phonicsWordLength');
     const savedLetterCase = localStorage.getItem('phonicsLetterCase');
@@ -138,7 +159,7 @@ const PhonicsApp = () => {
     if (savedZoomLevel) setZoomLevel(parseFloat(savedZoomLevel));
   }, []);
 
-  // Save preferences
+  // Save preferences whenever they change
   useEffect(() => {
     localStorage.setItem('phonicsWordLength', wordLength.toString());
     localStorage.setItem('phonicsLetterCase', letterCase);
@@ -147,14 +168,12 @@ const PhonicsApp = () => {
     localStorage.setItem('phonicsZoomLevel', zoomLevel.toString());
   }, [wordLength, letterCase, isDarkMode, audioEnabled, zoomLevel]);
 
+  // Track displayed text changes for conditional sound playing
   const formatDisplayText = (text) => {
     // Dynamic capitalization based on caps lock and shift
     if (wordLength === 1) {
       const shouldCapitalize = capsLockActive || shiftPressed;
-      if (shouldCapitalize) {
-        return text.toUpperCase();
-      }
-      return text.toLowerCase();
+      return shouldCapitalize ? text.toUpperCase() : text.toLowerCase();
     }
 
     // For words, use the letterCase setting
@@ -165,9 +184,42 @@ const PhonicsApp = () => {
     }
   };
 
+  const currentDisplayText = formatDisplayText(currentItem);
+
+  // Play sound only when display text actually changes
+  useEffect(() => {
+    if (lastDisplayedText && lastDisplayedText !== currentDisplayText) {
+      playSound(letterSoundRef, true);
+    }
+    setLastDisplayedText(currentDisplayText);
+  }, [currentDisplayText, audioEnabled]);
+
   const handleConfettiTrigger = () => {
     setShowConfetti(true);
-    playSound(confettiSoundRef);
+    playSound(confettiSoundRef, true);
+  };
+
+  const handleShowImage = () => {
+    setShowImage(true);
+    setTimeout(() => {
+      setShowImage(false);
+    }, 3000);
+  };
+
+  // Determine if image is available for current content
+  const hasImageAvailable = () => {
+    if (wordLength === 1) {
+      return letterImages[currentItem.toLowerCase()] !== undefined;
+    }
+    // For words, assume images are available (could be enhanced with actual availability check)
+    return true;
+  };
+
+  const getCurrentImageQuery = () => {
+    if (wordLength === 1) {
+      return letterImages[currentItem.toLowerCase()] || currentItem;
+    }
+    return currentItem;
   };
 
   return (
@@ -177,13 +229,13 @@ const PhonicsApp = () => {
         <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeIHp5jWfIdW9fKKrms5fWaNaBCw==" type="audio/wav" />
       </audio>
       <audio ref={confettiSoundRef} preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeAJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeA==" type="audio/wav" />
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeA==" type="audio/wav" />
       </audio>
 
       {/* Header with controls */}
       <div className="p-4 flex justify-between items-center">
         <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-          Phonics Fun for Toddlers
+          Simple Phonics
         </h1>
         
         <div className="flex items-center gap-4">
@@ -217,20 +269,30 @@ const PhonicsApp = () => {
 
       {/* Main learning area */}
       <div 
-        className="flex-1 flex items-center justify-center cursor-pointer select-none"
+        className="flex-1 flex items-center justify-center cursor-pointer select-none relative"
         onClick={handleScreenClick}
         style={{ height: 'calc(100vh - 120px)' }}
       >
         <LetterDisplay 
-          text={formatDisplayText(currentItem)}
+          text={currentDisplayText}
           isDarkMode={isDarkMode}
           showConfetti={showConfetti}
           zoomLevel={zoomLevel}
           onZoomChange={setZoomLevel}
+          showImage={showImage}
+          imageQuery={getCurrentImageQuery()}
         />
       </div>
 
-      {/* Confetti button */}
+      {/* Show Image button (bottom-left) */}
+      {hasImageAvailable() && (
+        <ShowImageButton
+          onShowImage={handleShowImage}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
+      {/* Confetti button (bottom-right) */}
       <ConfettiButton 
         onCelebrate={handleConfettiTrigger}
         onComplete={() => setShowConfetti(false)}

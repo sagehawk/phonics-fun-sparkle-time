@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Star } from 'lucide-react';
 
 const ConfettiButton = ({ onCelebrate, onComplete, isDarkMode }) => {
@@ -31,14 +31,14 @@ const ConfettiButton = ({ onCelebrate, onComplete, isDarkMode }) => {
     
     document.body.appendChild(confettiContainer);
 
-    // Create 60 confetti pieces for more impact
-    for (let i = 0; i < 60; i++) {
+    // Create 80 confetti pieces for maximum impact
+    for (let i = 0; i < 80; i++) {
       const confetti = document.createElement('div');
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const size = Math.random() * 10 + 6;
+      const size = Math.random() * 12 + 8; // Slightly larger pieces
       const startX = Math.random() * window.innerWidth;
       const duration = Math.random() * 3 + 2;
-      const delay = Math.random() * 0.5; // Reduced delay for immediate impact
+      const delay = Math.random() * 0.2; // Minimal delay for immediate impact
 
       confetti.style.cssText = `
         position: absolute;
