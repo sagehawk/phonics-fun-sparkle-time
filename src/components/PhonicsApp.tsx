@@ -6,7 +6,7 @@ import ConfettiButton from './ConfettiButton';
 import ShowImageButton from './ShowImageButton';
 import SettingsPanel from './SettingsPanel';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
-import { useImageSearch } from '../hooks/useImageSearch';
+import { useImageAPI } from '../hooks/useImageAPI';
 import { useAudioPlayback } from '../hooks/useAudioPlayback';
 
 const PhonicsApp: React.FC = () => {
