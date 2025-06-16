@@ -70,9 +70,6 @@ const PhonicsApp: React.FC = () => {
     ? currentContent[currentIndex] 
     : currentContent[currentIndex].toLowerCase();
 
-  const { imageData } = useImageSearch();
-  const currentImageData = imageData;
-
   useEffect(() => {
     setCurrentIndex(0);
     setShowImage(false);
