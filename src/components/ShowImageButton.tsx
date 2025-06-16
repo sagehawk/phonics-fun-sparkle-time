@@ -1,4 +1,4 @@
-
+/*
 import React from 'react';
 import { Lightbulb } from 'lucide-react';
 
@@ -43,3 +43,4 @@ const ShowImageButton: React.FC<ShowImageButtonProps> = ({ onShowImage, isDarkMo
 };
 
 export default ShowImageButton;
+*/

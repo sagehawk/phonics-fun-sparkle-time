@@ -162,102 +162,41 @@ const PhonicsApp = () => {
   };
 
   return (
-    <div className={`h-screen overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-amber-50'}`}>
-      {/* Audio elements */}
-      <audio ref={letterSoundRef} preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeIHp5jWfIdW9fKKrms5fWaNaBCw==" type="audio/wav" />
-      </audio>
-      <audio ref={confettiSoundRef} preload="auto">
-        <source src="https://www.myinstants.com/media/sounds/confetti-pop-sound.mp3" type="audio/mpeg" />
-      </audio>
-
-      {/* Header with controls */}
-      <div className="p-4 flex justify-between items-center">
-        <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-          Simple Phonics
-        </h1>
-        
-        <div className="flex items-center gap-4">
-          <WordLengthSlider 
-            value={wordLength} 
-            onChange={setWordLength}
-            isDarkMode={isDarkMode}
-          />
-          
-          <SettingsPanel 
-            caseMode={caseMode}
-            isDarkMode={isDarkMode}
-            audioEnabled={audioEnabled}
-            onAudioToggle={setAudioEnabled}
-          />
-          
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-2 rounded-lg transition-colors ${
-              isDarkMode 
-                ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
-                : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
-          </button>
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-300 bg-background">
+      <div className="mb-8">
+        <img src="/logo.svg" alt="Simple Phonics" className="w-48 h-auto" />
       </div>
-
-      {/* Main learning area */}
-      <div 
-        className="flex-1 flex items-center justify-center cursor-pointer select-none relative"
-        onClick={handleScreenClick}
-        style={{ height: 'calc(100vh - 120px)' }}
-      >
-        <LetterDisplay 
-          text={currentDisplayText}
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className="p-2 rounded-full hover:bg-accent"
+          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+        </button>
+        <SettingsPanel
+          caseMode={wordLength === 1 ? 'uppercase' : 'lowercase'}
           isDarkMode={isDarkMode}
-          showConfetti={showConfetti}
-          zoomLevel={zoomLevel}
-          onZoomChange={setZoomLevel}
-          showImage={showImage}
-          imageData={currentImageData}
+          audioEnabled={audioEnabled}
+          onAudioToggle={setAudioEnabled}
         />
       </div>
-
-      {/* Responsive button layout */}
-      <div className="fixed bottom-6 left-0 right-0 z-20">
-        {/* Mobile layout: buttons on opposite sides */}
-        <div className="block md:hidden">
-          <ShowImageButton
-            onShowImage={handleShowImage}
-            isDarkMode={isDarkMode}
-            className="fixed bottom-6 left-6"
-          />
-          <ConfettiButton 
-            onCelebrate={handleConfettiTrigger}
-            onComplete={() => setShowConfetti(false)}
-            isDarkMode={isDarkMode}
-            className="fixed bottom-6 right-6"
-          />
-        </div>
-        
-        {/* Desktop layout: buttons together in bottom-right */}
-        <div className="hidden md:block">
-          <div className="fixed bottom-6 right-6 flex gap-3">
-            <ShowImageButton
-              onShowImage={handleShowImage}
-              isDarkMode={isDarkMode}
-            />
-            <ConfettiButton 
-              onCelebrate={handleConfettiTrigger}
-              onComplete={() => setShowConfetti(false)}
-              isDarkMode={isDarkMode}
-            />
-          </div>
-        </div>
+      <LetterDisplay
+        text={currentItem}
+        isDarkMode={isDarkMode}
+        showConfetti={showConfetti}
+        zoomLevel={zoomLevel}
+        onZoomChange={setZoomLevel}
+        showImage={showImage}
+        imageData={currentImageData}
+      />
+      <div className="flex flex-wrap justify-center gap-4 mt-8">
+        <ConfettiButton onClick={() => handleConfettiClick()} />
+        <ShowImageButton onClick={handleImageButtonClick} />
       </div>
-
-      {/* Instructions */}
-      <div className={`p-4 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-        <p>Press letter keys for direct access • Press Shift to toggle case • Click left/right to navigate • Scroll to zoom</p>
-      </div>
+      <WordLengthSlider value={wordLength} onChange={handleWordLengthChange} />
+      <audio ref={letterSoundRef} />
+      <audio ref={confettiSoundRef} src="/confetti.mp3" />
     </div>
   );
 };

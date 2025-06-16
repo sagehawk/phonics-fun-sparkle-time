@@ -97,17 +97,17 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           text-8xl md:text-9xl lg:text-[12rem] font-bold
           transition-all duration-300 ease-out
           ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
-          ${isJiggling ? 'animate-bounce' : ''}
           ${isDarkMode ? 'text-white' : 'text-gray-800'}
           font-nunito tracking-wider
           flex items-center justify-center
+          ${isJiggling ? 'animate-[bounce_0.6s_ease-in-out]' : ''}
         `}
         style={{ 
           fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
           textShadow: isDarkMode 
             ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
             : '0 4px 20px rgba(0, 0, 0, 0.1)',
-          transform: `scale(${zoomLevel})`,
+          transform: `scale(${zoomLevel}) ${isJiggling ? 'translateY(0)' : ''}`,
           transformOrigin: 'center',
           lineHeight: '0.8',
           display: 'flex',
