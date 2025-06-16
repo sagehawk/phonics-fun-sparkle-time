@@ -6,7 +6,7 @@ const ConfettiButton = ({ onCelebrate, onComplete, isDarkMode }) => {
   const triggerConfetti = () => {
     onCelebrate();
     
-    // Create confetti particles
+    // Create confetti particles immediately
     createConfetti();
     
     // Clear confetti after animation
@@ -31,14 +31,14 @@ const ConfettiButton = ({ onCelebrate, onComplete, isDarkMode }) => {
     
     document.body.appendChild(confettiContainer);
 
-    // Create 50 confetti pieces
-    for (let i = 0; i < 50; i++) {
+    // Create 60 confetti pieces for more impact
+    for (let i = 0; i < 60; i++) {
       const confetti = document.createElement('div');
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const size = Math.random() * 8 + 4;
+      const size = Math.random() * 10 + 6;
       const startX = Math.random() * window.innerWidth;
       const duration = Math.random() * 3 + 2;
-      const delay = Math.random() * 1;
+      const delay = Math.random() * 0.5; // Reduced delay for immediate impact
 
       confetti.style.cssText = `
         position: absolute;
@@ -55,7 +55,7 @@ const ConfettiButton = ({ onCelebrate, onComplete, isDarkMode }) => {
       confettiContainer.appendChild(confetti);
     }
 
-    // Add CSS animation
+    // Add CSS animation if not already present
     if (!document.getElementById('confetti-styles')) {
       const style = document.createElement('style');
       style.id = 'confetti-styles';
@@ -82,9 +82,20 @@ const ConfettiButton = ({ onCelebrate, onComplete, isDarkMode }) => {
     }, 5000);
   };
 
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    triggerConfetti();
+  };
+
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    triggerConfetti();
+  };
+
   return (
     <button
-      onClick={triggerConfetti}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
       className={`
         fixed bottom-6 right-6 w-16 h-16 rounded-full
         flex items-center justify-center
