@@ -20,9 +20,11 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: 'dist',
+    target: 'esnext',
     rollupOptions: {
       output: {
-        manualChunks: undefined
+        manualChunks: undefined,
+        format: 'es'
       }
     }
   }
