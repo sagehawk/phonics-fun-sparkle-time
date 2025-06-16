@@ -24,8 +24,11 @@ export const useKeyboardControls = (
       return;
     }
 
-    // Only respond to letter keys (a-z)
-    if (!key.match(/^[a-z]$/)) {
+    // Allow arrow keys and spacebar for navigation
+    if (key === 'arrowright' || key === 'arrowleft' || key === ' ') {
+      // Navigation logic is handled below for word mode
+    } else if (!key.match(/^[a-z]$/)) {
+      // If not an arrow key, space, or a letter, ignore
       return;
     }
 
