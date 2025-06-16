@@ -65,7 +65,7 @@ const PhonicsApp: React.FC = () => {
       console.error('Error fetching image:', error);
     }
   };
-  const { playAudio } = useAudioPlayback(audioRef);
+  // const { playAudio } = useAudioPlayback(audioRef);
 
   const currentDisplayText = caseMode === 'uppercase' 
     ? currentContent[currentIndex] 
@@ -78,9 +78,9 @@ const PhonicsApp: React.FC = () => {
 
   useEffect(() => {
     if (audioEnabled) {
-      playAudio();
+      // playAudio();
     }
-  }, [currentIndex, audioEnabled, playAudio]);
+  }, [currentIndex, audioEnabled]); // Removed playAudio from dependencies
 
   const handleConfettiTrigger = () => {
     setShowConfetti(true);
