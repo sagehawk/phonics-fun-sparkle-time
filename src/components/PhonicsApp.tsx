@@ -177,7 +177,7 @@ const PhonicsApp = () => {
           <img 
             src="https://i.imgur.com/wgCFzsE.png" 
             alt="Simple Phonics" 
-            className="h-8 w-auto"
+            className="h-20 w-auto"
           />
         </div>
         
