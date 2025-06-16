@@ -1,274 +1,195 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
 import LetterDisplay from './LetterDisplay';
-import WordLengthSlider from './WordLengthSlider';
 import ConfettiButton from './ConfettiButton';
 import ShowImageButton from './ShowImageButton';
 import SettingsPanel from './SettingsPanel';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
-import { useImageAPI } from '../hooks/useImageAPI';
-import { Sun, Moon } from 'lucide-react';
+import { useImageSearch } from '../hooks/useImageSearch';
+import { useAudioPlayback } from '../hooks/useAudioPlayback';
 
-const PhonicsApp = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+const PhonicsApp: React.FC = () => {
   const [wordLength, setWordLength] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [showImage, setShowImage] = useState(false);
-  const [currentImageData, setCurrentImageData] = useState<{ url: string; searchTerm: string } | null>(null);
-  const [lastDisplayedText, setLastDisplayedText] = useState('');
-
-  // Audio refs
-  const letterSoundRef = useRef<HTMLAudioElement>(null);
-  const confettiSoundRef = useRef<HTMLAudioElement>(null);
-
-  const { fetchImage } = useImageAPI();
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Content arrays for different word lengths
-  const singleLetters = 'abcdefghijklmnopqrstuvwxyz'.split('');
-  const twoLetterWords = ['at', 'in', 'it', 'on', 'of', 'to', 'an', 'as', 'be', 'go', 'he', 'me', 'we', 'up', 'so', 'no', 'my', 'by', 'do', 'or'];
-  const threeLetterWords = ['cat', 'dog', 'sun', 'pig', 'fan', 'top', 'cup', 'bag', 'hat', 'pen', 'log', 'web', 'jam', 'box', 'fox', 'bed', 'red', 'leg', 'egg', 'hug'];
-  const fourLetterWords = ['frog', 'clap', 'swim', 'flag', 'stop', 'jump', 'play', 'moon', 'star', 'fish', 'bird', 'book', 'cake', 'tree', 'ball', 'duck', 'hand', 'door', 'rain', 'snow'];
+  const singleLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const twoLetterWords = ['AT', 'BE', 'GO', 'HE', 'IF', 'IN', 'IS', 'IT', 'MY', 'NO', 'OF', 'ON', 'OR', 'SO', 'TO', 'UP', 'WE'];
+  const threeLetterWords = ['AND', 'ARE', 'BUT', 'CAN', 'CAR', 'CAT', 'DOG', 'EAT', 'FOR', 'GET', 'GOT', 'HAD', 'HAS', 'HER', 'HIM', 'HIS', 'HOW', 'ITS', 'LET', 'MAY', 'NEW', 'NOT', 'NOW', 'OLD', 'ONE', 'OUR', 'OUT', 'PUT', 'RUN', 'SAY', 'SHE', 'THE', 'TOO', 'TWO', 'USE', 'WAS', 'WAY', 'WHO', 'WIN', 'YES', 'YET', 'YOU'];
+  const fourLetterWords = ['BACK', 'BEEN', 'CALL', 'CAME', 'COME', 'EACH', 'FIND', 'GIVE', 'GOOD', 'HAVE', 'HERE', 'JUST', 'KNOW', 'LAST', 'LEFT', 'LIFE', 'LIKE', 'LIVE', 'LOOK', 'MADE', 'MAKE', 'MANY', 'MORE', 'MOST', 'MOVE', 'MUCH', 'NAME', 'NEED', 'NEXT', 'ONLY', 'OVER', 'PART', 'PLAY', 'RIGHT', 'SAID', 'SAME', 'SEEM', 'SHOW', 'SOME', 'TAKE', 'TELL', 'THAN', 'THAT', 'THEM', 'THEY', 'THIS', 'TIME', 'VERY', 'WANT', 'WELL', 'WENT', 'WERE', 'WHAT', 'WHEN', 'WILL', 'WITH', 'WORD', 'WORK', 'YEAR', 'YOUR'];
+  const fiveLetterWords = ['ABOUT', 'AFTER', 'AGAIN', 'BEING', 'COULD', 'EVERY', 'FIRST', 'FOUND', 'GREAT', 'GROUP', 'HOUSE', 'LARGE', 'PLACE', 'RIGHT', 'SHALL', 'SMALL', 'SOUND', 'STILL', 'THEIR', 'THERE', 'THESE', 'THINK', 'THREE', 'UNDER', 'WATER', 'WHERE', 'WHICH', 'WHILE', 'WORLD', 'WOULD', 'WRITE', 'YOUNG'];
 
   const getCurrentContent = () => {
-    switch(wordLength) {
+    switch (wordLength) {
       case 1: return singleLetters;
       case 2: return twoLetterWords;
       case 3: return threeLetterWords;
       case 4: return fourLetterWords;
+      case 5: return fiveLetterWords;
       default: return singleLetters;
     }
   };
 
   const currentContent = getCurrentContent();
-  const currentItem = currentContent[currentIndex % currentContent.length];
-
-  // Play sound helper
-  const playSound = (audioRef: React.RefObject<HTMLAudioElement>) => {
-    if (audioEnabled && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {
-        // Ignore audio play errors
-      });
-    }
-  };
-
-  const handleContentChange = () => {
-    playSound(letterSoundRef);
-    // Hide image immediately if it's showing when content changes
-    if (showImage) {
-      setShowImage(false);
-      setCurrentImageData(null);
-    }
-  };
-
-  // Enhanced keyboard navigation with simplified logic
-  const { caseMode } = useKeyboardControls(
+  const { caseMode, toggleCaseMode } = useKeyboardControls(
     currentContent,
     currentIndex,
     setCurrentIndex,
     wordLength,
-    handleContentChange
+    () => {
+      setShowImage(false);
+      if (audioEnabled) {
+        playAudio();
+      }
+    }
   );
 
-  // Enhanced mouse wheel zoom functionality with increased sensitivity
-  useEffect(() => {
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      const delta = event.deltaY > 0 ? -0.2 : 0.2; // Increased sensitivity
-      setZoomLevel(prev => Math.max(0.5, Math.min(8, prev + delta))); // Increased max zoom
-    };
+  const { searchImage } = useImageSearch();
+  const { playAudio } = useAudioPlayback(audioRef);
 
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, []);
+  const currentDisplayText = caseMode === 'uppercase' 
+    ? currentContent[currentIndex] 
+    : currentContent[currentIndex].toLowerCase();
 
-  // Touch/click navigation
-  const handleScreenClick = (event: React.MouseEvent) => {
-    const screenWidth = window.innerWidth;
-    const clickX = event.clientX;
-    
-    let newIndex;
-    if (clickX > screenWidth / 2) {
-      // Right side - next
-      newIndex = (currentIndex + 1) % currentContent.length;
-    } else {
-      // Left side - previous
-      newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
-    }
-    
-    setCurrentIndex(newIndex);
-    handleContentChange();
-  };
+  const { imageData } = useImageSearch();
+  const currentImageData = imageData;
 
-  // Reset index when word length changes
   useEffect(() => {
     setCurrentIndex(0);
+    setShowImage(false);
   }, [wordLength]);
 
-  // Load saved preferences on mount
   useEffect(() => {
-    const savedWordLength = localStorage.getItem('phonicsWordLength');
-    const savedDarkMode = localStorage.getItem('phonicsDarkMode');
-    const savedAudioEnabled = localStorage.getItem('phonicsAudioEnabled');
-    const savedZoomLevel = localStorage.getItem('phonicsZoomLevel');
-    
-    if (savedWordLength) setWordLength(parseInt(savedWordLength));
-    if (savedDarkMode) setIsDarkMode(savedDarkMode === 'true');
-    if (savedAudioEnabled) setAudioEnabled(savedAudioEnabled === 'true');
-    if (savedZoomLevel) setZoomLevel(parseFloat(savedZoomLevel));
-  }, []);
-
-  // Save preferences whenever they change
-  useEffect(() => {
-    localStorage.setItem('phonicsWordLength', wordLength.toString());
-    localStorage.setItem('phonicsDarkMode', isDarkMode.toString());
-    localStorage.setItem('phonicsAudioEnabled', audioEnabled.toString());
-    localStorage.setItem('phonicsZoomLevel', zoomLevel.toString());
-  }, [wordLength, isDarkMode, audioEnabled, zoomLevel]);
-
-  // Format display text based on case mode
-  const formatDisplayText = (text: string) => {
-    return caseMode === 'uppercase' ? text.toUpperCase() : text.toLowerCase();
-  };
-
-  const currentDisplayText = formatDisplayText(currentItem);
-
-  // Play sound only when display text actually changes
-  useEffect(() => {
-    if (lastDisplayedText && lastDisplayedText !== currentDisplayText) {
-      playSound(letterSoundRef);
+    if (audioEnabled) {
+      playAudio();
     }
-    setLastDisplayedText(currentDisplayText);
-  }, [currentDisplayText, audioEnabled]);
+  }, [currentIndex, audioEnabled, playAudio]);
 
   const handleConfettiTrigger = () => {
     setShowConfetti(true);
-    playSound(confettiSoundRef);
   };
 
   const handleShowImage = async () => {
-    const imageData = await fetchImage(currentItem, wordLength === 1);
-    if (imageData) {
-      setCurrentImageData(imageData);
-      setShowImage(true);
-      setTimeout(() => {
-        setShowImage(false);
-        setCurrentImageData(null);
-      }, 3000);
+    if (!showImage) {
+      await searchImage(currentContent[currentIndex]);
     }
+    setShowImage(!showImage);
   };
 
-  // Handle letter click/tap for case toggle
+  const handleScreenClick = () => {
+    setShowImage(false);
+  };
+
   const handleLetterClick = () => {
-    if (wordLength === 1) { // Only toggle case for single letters
-      const newCaseMode = caseMode === 'uppercase' ? 'lowercase' : 'uppercase';
-      // Update the case mode in useKeyboardControls hook state
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: newCaseMode === 'uppercase' ? 'ArrowUp' : 'ArrowDown'
-      }));
+    if (wordLength === 1) {
+      toggleCaseMode();
     }
   };
 
   return (
-    <div className={`h-screen overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-amber-50'}`}>
-      {/* Audio elements */}
-      <audio ref={letterSoundRef} preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeIHp5jWfIdW9fKKrms5fWaNaBCw==" type="audio/wav" />
-      </audio>
-      <audio ref={confettiSoundRef} preload="auto">
-        <source src="https://www.myinstants.com/media/sounds/confetti-pop-sound.mp3" type="audio/mpeg" />
-      </audio>
-
-      {/* Header with controls */}
-      <div className="p-4 flex justify-between items-center">
-        <div className="hidden md:flex items-center">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900' 
+        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+    } flex flex-col`}>
+      
+      {/* Header with logo and controls */}
+      <div className={`p-4 border-b transition-colors ${
+        isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white/50'
+      } backdrop-blur-sm`}>
+        <div className="flex justify-between items-center max-w-6xl mx-auto">
+          {/* Logo - hidden on mobile */}
           <img 
             src="https://i.imgur.com/wgCFzsE.png" 
-            alt="Simple Phonics" 
-            className="h-20 w-auto"
-          />
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <WordLengthSlider 
-            value={wordLength} 
-            onChange={setWordLength}
-            isDarkMode={isDarkMode}
+            alt="Simple Phonics Logo" 
+            className="hidden md:block h-20 object-contain"
           />
           
+          {/* Mobile: Just the dark mode toggle */}
+          <div className="md:hidden w-full flex justify-end">
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
+              aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+            </button>
+          </div>
+
+          {/* Desktop: Settings and dark mode toggle */}
+          <div className="hidden md:flex items-center gap-4">
+            <SettingsPanel 
+              caseMode={caseMode}
+              isDarkMode={isDarkMode}
+              audioEnabled={audioEnabled}
+              onAudioToggle={setAudioEnabled}
+            />
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
+              aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content area - centered on mobile */}
+      <div 
+        className="flex-grow flex flex-col items-center justify-center p-4 min-h-0"
+        onClick={handleScreenClick}
+      >
+        <div className="w-full h-full flex items-center justify-center">
+          <LetterDisplay 
+            text={currentDisplayText} 
+            isDarkMode={isDarkMode} 
+            showConfetti={showConfetti} 
+            zoomLevel={zoomLevel}
+            onZoomChange={setZoomLevel}
+            showImage={showImage}
+            imageData={currentImageData}
+            onLetterClick={handleLetterClick}
+            isClickable={wordLength === 1}
+          />
+        </div>
+      </div>
+
+      {/* Controls at the bottom */}
+      <div className="p-4">
+        {/* Mobile: Settings panel */}
+        <div className="md:hidden mb-4">
           <SettingsPanel 
             caseMode={caseMode}
             isDarkMode={isDarkMode}
             audioEnabled={audioEnabled}
             onAudioToggle={setAudioEnabled}
           />
-          
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-yellow-400 text-gray-900' : 'bg-gray-800 text-yellow-400'}`}
-          >
-            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Main learning area */}
-      <div 
-        className="flex-1 flex items-center justify-center cursor-pointer select-none relative"
-        onClick={handleScreenClick}
-        style={{ height: 'calc(100vh - 120px)' }}
-      >
-        <LetterDisplay 
-          text={currentDisplayText}
-          isDarkMode={isDarkMode}
-          showConfetti={showConfetti}
-          zoomLevel={zoomLevel}
-          onZoomChange={setZoomLevel}
-          showImage={showImage}
-          imageData={currentImageData}
-        />
-      </div>
-
-      {/* Responsive button layout */}
-      <div className="fixed bottom-6 left-0 right-0 z-20">
-        {/* Mobile layout: buttons on opposite sides */}
-        <div className="block md:hidden">
-          <ShowImageButton
-            onShowImage={handleShowImage}
-            isDarkMode={isDarkMode}
-            className="fixed bottom-6 left-6"
-          />
-          <ConfettiButton 
-            onCelebrate={handleConfettiTrigger}
-            onComplete={() => setShowConfetti(false)}
-            isDarkMode={isDarkMode}
-            className="fixed bottom-6 right-6"
-          />
         </div>
         
-        {/* Desktop layout: buttons together in bottom-right */}
-        <div className="hidden md:block">
-          <div className="fixed bottom-6 right-6 flex gap-3">
-            <ShowImageButton
-              onShowImage={handleShowImage}
-              isDarkMode={isDarkMode}
-            />
-            <ConfettiButton 
-              onCelebrate={handleConfettiTrigger}
-              onComplete={() => setShowConfetti(false)}
-              isDarkMode={isDarkMode}
-            />
-          </div>
+        {/* Action buttons */}
+        <div className="flex justify-center items-center gap-4">
+          <ConfettiButton 
+            onCelebrate={handleConfettiTrigger} 
+            onComplete={() => setShowConfetti(false)}
+            isDarkMode={isDarkMode}
+          />
+          <ShowImageButton 
+            onShowImage={handleShowImage} 
+            isDarkMode={isDarkMode}
+          />
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className={`p-4 text-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-        <p>Press letter keys for direct access • Press Shift to toggle case • Click left/right to navigate • Scroll to zoom</p>
-      </div>
+      {/* Audio element */}
+      <audio ref={audioRef} preload="auto" />
     </div>
   );
 };

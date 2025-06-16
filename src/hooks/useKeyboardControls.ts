@@ -10,13 +10,17 @@ export const useKeyboardControls = (
 ) => {
   const [caseMode, setCaseMode] = useState<'lowercase' | 'uppercase'>('lowercase');
 
+  const toggleCaseMode = useCallback(() => {
+    setCaseMode(prev => prev === 'lowercase' ? 'uppercase' : 'lowercase');
+  }, []);
+
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toLowerCase();
 
     // Toggle case mode with Shift key
     if (key === 'shift') {
       event.preventDefault();
-      setCaseMode(prev => prev === 'lowercase' ? 'uppercase' : 'lowercase');
+      toggleCaseMode();
       return;
     }
 
@@ -46,12 +50,12 @@ export const useKeyboardControls = (
         onContentChange();
       }
     }
-  }, [currentContent.length, currentIndex, setCurrentIndex, wordLength, onContentChange]);
+  }, [currentContent.length, currentIndex, setCurrentIndex, wordLength, onContentChange, toggleCaseMode]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  return { caseMode };
+  return { caseMode, toggleCaseMode };
 };

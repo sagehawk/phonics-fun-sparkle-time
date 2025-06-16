@@ -9,6 +9,8 @@ interface LetterDisplayProps {
   onZoomChange: (level: number) => void;
   showImage: boolean;
   imageData: { url: string; searchTerm: string } | null;
+  onLetterClick?: () => void;
+  isClickable?: boolean;
 }
 
 const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
@@ -18,7 +20,9 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   zoomLevel, 
   onZoomChange, 
   showImage, 
-  imageData 
+  imageData,
+  onLetterClick,
+  isClickable = false
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isJiggling, setIsJiggling] = useState(false);
@@ -89,6 +93,13 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     };
   }, [zoomLevel, onZoomChange]);
 
+  const handleLetterClick = (e: React.MouseEvent) => {
+    if (isClickable && onLetterClick) {
+      e.stopPropagation(); // Prevent triggering parent click handlers
+      onLetterClick();
+    }
+  };
+
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full">
       {/* Main letter/word display */}
@@ -101,13 +112,14 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           ${isDarkMode ? 'text-white' : 'text-gray-800'}
           font-nunito tracking-wider
           flex items-center justify-center
+          ${isClickable ? 'cursor-pointer hover:opacity-80' : ''}
         `}
         style={{ 
           fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
           textShadow: isDarkMode 
             ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
             : '0 4px 20px rgba(0, 0, 0, 0.1)',
-          transform: `scale(${zoomLevel})`,
+          transform: `scale(${isJiggling ? zoomLevel * 1.1 : zoomLevel})`, // Maintain zoom level during jiggle
           transformOrigin: 'center',
           lineHeight: '0.8',
           display: 'flex',
@@ -115,6 +127,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           justifyContent: 'center',
           minHeight: '1em'
         }}
+        onClick={handleLetterClick}
       >
         {text}
       </div>
