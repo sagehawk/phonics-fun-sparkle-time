@@ -161,6 +161,17 @@ const PhonicsApp = () => {
     }
   };
 
+  // Handle letter click/tap for case toggle
+  const handleLetterClick = () => {
+    if (wordLength === 1) { // Only toggle case for single letters
+      const newCaseMode = caseMode === 'uppercase' ? 'lowercase' : 'uppercase';
+      // Update the case mode in useKeyboardControls hook state
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: newCaseMode === 'uppercase' ? 'ArrowUp' : 'ArrowDown'
+      }));
+    }
+  };
+
   return (
     <div className={`h-screen overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-amber-50'}`}>
       {/* Audio elements */}
@@ -173,7 +184,7 @@ const PhonicsApp = () => {
 
       {/* Header with controls */}
       <div className="p-4 flex justify-between items-center">
-        <div className="flex items-center">
+        <div className="hidden md:flex items-center">
           <img 
             src="https://i.imgur.com/wgCFzsE.png" 
             alt="Simple Phonics" 
@@ -197,11 +208,7 @@ const PhonicsApp = () => {
           
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-2 rounded-lg transition-colors ${
-              isDarkMode 
-                ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
-                : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-yellow-400 text-gray-900' : 'bg-gray-800 text-yellow-400'}`}
           >
             {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
           </button>
