@@ -173,9 +173,13 @@ const PhonicsApp = () => {
 
       {/* Header with controls */}
       <div className="p-4 flex justify-between items-center">
-        <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-          Simple Phonics
-        </h1>
+        <div className="flex items-center">
+          <img 
+            src="https://i.imgur.com/wgCFzsE.png" 
+            alt="Simple Phonics" 
+            className="h-8 w-auto"
+          />
+        </div>
         
         <div className="flex items-center gap-4">
           <WordLengthSlider 
