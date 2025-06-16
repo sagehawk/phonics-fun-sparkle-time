@@ -162,41 +162,61 @@ const PhonicsApp = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-300 bg-background">
-      <div className="mb-8">
-        <img src="/logo.svg" alt="Simple Phonics" className="w-48 h-auto" />
-      </div>
-      <div className="flex items-center gap-4 mb-8">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 transition-colors duration-300 bg-gradient-to-b from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+      <header className="w-full max-w-4xl mx-auto mb-8 flex justify-between items-center">
+        <img src="/logo.svg" alt="Simple Phonics" className="h-12" />
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="p-2 rounded-full hover:bg-accent"
-          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >
           {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
         </button>
-        <SettingsPanel
-          caseMode={wordLength === 1 ? 'uppercase' : 'lowercase'}
-          isDarkMode={isDarkMode}
-          audioEnabled={audioEnabled}
-          onAudioToggle={setAudioEnabled}
+      </header>
+      
+      <main className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center space-y-8">
+        <LetterDisplay
+          text={currentItem}
+          showConfetti={showConfetti}
+          zoomLevel={zoomLevel}
+          setZoomLevel={setZoomLevel}
+          showImage={showImage}
+          imageUrl={currentImageData?.url}
         />
-      </div>
-      <LetterDisplay
-        text={currentItem}
-        isDarkMode={isDarkMode}
-        showConfetti={showConfetti}
-        zoomLevel={zoomLevel}
-        onZoomChange={setZoomLevel}
-        showImage={showImage}
-        imageData={currentImageData}
-      />
-      <div className="flex flex-wrap justify-center gap-4 mt-8">
-        <ConfettiButton onClick={() => handleConfettiClick()} />
-        <ShowImageButton onClick={handleImageButtonClick} />
-      </div>
-      <WordLengthSlider value={wordLength} onChange={handleWordLengthChange} />
-      <audio ref={letterSoundRef} />
-      <audio ref={confettiSoundRef} src="/confetti.mp3" />
+      
+        <div className="flex items-center justify-center space-x-4">
+          <ConfettiButton
+            onClick={() => {
+              setShowConfetti(true);
+              if (confettiSoundRef.current && audioEnabled) {
+                confettiSoundRef.current.play();
+              }
+            }}
+          />
+          <ShowImageButton
+            onClick={() => {
+              setShowImage(true);
+              if (!currentImageData || lastDisplayedText !== currentItem) {
+                fetchImage(currentItem).then(data => {
+                  if (data) {
+                    setCurrentImageData(data);
+                    setLastDisplayedText(currentItem);
+                  }
+                });
+              }
+            }}
+          />
+        </div>
+      
+        <WordLengthSlider value={wordLength} onChange={setWordLength} />
+        <SettingsPanel
+          audioEnabled={audioEnabled}
+          onAudioToggle={() => setAudioEnabled(!audioEnabled)}
+        />
+      </main>
+      
+      <audio ref={letterSoundRef} src="/sounds/pop.mp3" />
+      <audio ref={confettiSoundRef} src="/sounds/celebration.mp3" />
     </div>
   );
 };
