@@ -51,7 +51,19 @@ const PhonicsApp: React.FC = () => {
     }
   );
 
-  const { searchImage } = useImageSearch();
+  const { fetchImage } = useImageAPI();
+  const [currentImageData, setCurrentImageData] = useState<{ url: string; searchTerm: string } | null>(null);
+
+  const searchImage = async (text: string) => {
+    try {
+      const result = await fetchImage(text, wordLength === 1);
+      if (result) {
+        setCurrentImageData(result);
+      }
+    } catch (error) {
+      console.error('Error fetching image:', error);
+    }
+  };
   const { playAudio } = useAudioPlayback(audioRef);
 
   const currentDisplayText = caseMode === 'uppercase' 
