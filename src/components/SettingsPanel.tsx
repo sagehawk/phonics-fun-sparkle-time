@@ -2,7 +2,19 @@
 import React, { useState } from 'react';
 import { Settings, Volume2, VolumeX } from 'lucide-react';
 
-const SettingsPanel = ({ letterCase, onLetterCaseChange, isDarkMode, audioEnabled, onAudioToggle, capsLockActive }) => {
+interface SettingsPanelProps {
+  caseMode: 'lowercase' | 'uppercase';
+  isDarkMode: boolean;
+  audioEnabled: boolean;
+  onAudioToggle: (enabled: boolean) => void;
+}
+
+const SettingsPanel: React.FC<SettingsPanelProps> = ({ 
+  caseMode, 
+  isDarkMode, 
+  audioEnabled, 
+  onAudioToggle 
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -49,50 +61,25 @@ const SettingsPanel = ({ letterCase, onLetterCaseChange, isDarkMode, audioEnable
               </button>
             </div>
 
-            {/* Letter Case */}
+            {/* Current Case Mode Display */}
             <div>
               <label className={`text-sm font-medium block mb-2 ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Letter Case
-                {capsLockActive && (
-                  <span className={`ml-2 text-xs px-2 py-1 rounded ${
-                    isDarkMode ? 'bg-yellow-600 text-yellow-100' : 'bg-yellow-200 text-yellow-800'
-                  }`}>
-                    CAPS LOCK ON
-                  </span>
-                )}
+                Current Case Mode
               </label>
-              <div className="space-y-1">
-                {[
-                  { value: 'lowercase', label: 'Lowercase (a)' },
-                  { value: 'uppercase', label: 'Uppercase (A)' },
-                  { value: 'both', label: 'Both (a A)' }
-                ].map((option) => (
-                  <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value={option.value}
-                      checked={letterCase === option.value}
-                      onChange={(e) => onLetterCaseChange(e.target.value)}
-                      disabled={capsLockActive}
-                      className={`text-blue-500 ${capsLockActive ? 'opacity-50' : ''}`}
-                    />
-                    <span className={`text-sm ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                    } ${capsLockActive ? 'opacity-50' : ''}`}>
-                      {option.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              {capsLockActive && (
+              <div className={`px-3 py-2 rounded-lg ${
+                isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+              }`}>
+                <span className="text-sm font-medium">
+                  {caseMode === 'lowercase' ? 'Lowercase (a)' : 'Uppercase (A)'}
+                </span>
                 <p className={`text-xs mt-1 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}>
-                  Letter case is controlled by Caps Lock
+                  Press Shift to toggle case mode
                 </p>
-              )}
+              </div>
             </div>
           </div>
         </div>
