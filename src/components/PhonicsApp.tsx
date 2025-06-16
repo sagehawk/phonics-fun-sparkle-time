@@ -7,7 +7,8 @@ import ShowImageButton from './ShowImageButton';
 import SettingsPanel from './SettingsPanel';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { useImageAPI } from '../hooks/useImageAPI';
-import { useAudioPlayback } from '../hooks/useAudioPlayback';
+// Remove the import statement for useAudioPlayback
+// import { useAudioPlayback } from '../hooks/useAudioPlayback';
 
 const PhonicsApp: React.FC = () => {
   const [wordLength, setWordLength] = useState(1);
