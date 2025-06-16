@@ -2,24 +2,17 @@
 import React from 'react';
 import { Star } from 'lucide-react';
 
-interface ConfettiButtonProps {
-  onCelebrate: () => void;
-  onComplete: () => void;
-  isDarkMode: boolean;
-  className?: string;
-}
-
-const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete, isDarkMode, className = '' }) => {
+const ConfettiButton = ({ onCelebrate, onComplete, isDarkMode }) => {
   const triggerConfetti = () => {
     onCelebrate();
     
-    // Create enhanced confetti particles that burst from center
+    // Create confetti particles immediately
     createConfetti();
     
-    // Clear confetti after shorter, more energetic animation
+    // Clear confetti after animation
     setTimeout(() => {
       onComplete();
-    }, 2000); // Reduced from 3000ms
+    }, 3000);
   };
 
   const createConfetti = () => {
@@ -28,61 +21,52 @@ const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete
     confettiContainer.className = 'confetti-container';
     confettiContainer.style.cssText = `
       position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
       z-index: 1000;
-      transform: translate(-50%, -50%);
     `;
     
     document.body.appendChild(confettiContainer);
 
-    // Create 100 confetti pieces for maximum impact, originating from center
-    for (let i = 0; i < 100; i++) {
+    // Create 80 confetti pieces for maximum impact
+    for (let i = 0; i < 80; i++) {
       const confetti = document.createElement('div');
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const size = Math.random() * 15 + 10; // Larger pieces
-      const angle = (Math.PI * 2 * i) / 100; // Distribute evenly in circle
-      const velocity = Math.random() * 300 + 200; // Faster, more explosive
-      const duration = Math.random() * 1.5 + 1; // Shorter duration
+      const size = Math.random() * 12 + 8; // Slightly larger pieces
+      const startX = Math.random() * window.innerWidth;
+      const duration = Math.random() * 3 + 2;
+      const delay = Math.random() * 0.2; // Minimal delay for immediate impact
 
       confetti.style.cssText = `
         position: absolute;
         width: ${size}px;
         height: ${size}px;
         background: ${color};
-        top: 0;
-        left: 0;
+        top: -10px;
+        left: ${startX}px;
         border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
-        animation: confetti-burst ${duration}s ease-out forwards;
+        animation: confetti-fall ${duration}s linear ${delay}s forwards;
         transform: rotate(${Math.random() * 360}deg);
-        --angle: ${angle}rad;
-        --velocity: ${velocity}px;
       `;
 
       confettiContainer.appendChild(confetti);
     }
 
-    // Add enhanced CSS animation for burst effect
-    if (!document.getElementById('confetti-burst-styles')) {
+    // Add CSS animation if not already present
+    if (!document.getElementById('confetti-styles')) {
       const style = document.createElement('style');
-      style.id = 'confetti-burst-styles';
+      style.id = 'confetti-styles';
       style.textContent = `
-        @keyframes confetti-burst {
+        @keyframes confetti-fall {
           0% {
-            transform: translate(0, 0) rotate(0deg) scale(1);
+            transform: translateY(-10px) rotate(0deg);
             opacity: 1;
           }
           100% {
-            transform: 
-              translate(
-                calc(cos(var(--angle)) * var(--velocity)), 
-                calc(sin(var(--angle)) * var(--velocity) + 400px)
-              ) 
-              rotate(720deg) 
-              scale(0.5);
+            transform: translateY(${window.innerHeight + 10}px) rotate(720deg);
             opacity: 0;
           }
         }
@@ -90,20 +74,20 @@ const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete
       document.head.appendChild(style);
     }
 
-    // Clean up faster
+    // Clean up
     setTimeout(() => {
       if (confettiContainer.parentNode) {
         confettiContainer.parentNode.removeChild(confettiContainer);
       }
-    }, 3000);
+    }, 5000);
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (e) => {
     e.preventDefault();
     triggerConfetti();
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e) => {
     e.preventDefault();
     triggerConfetti();
   };
@@ -113,7 +97,7 @@ const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
       className={`
-        w-16 h-16 rounded-full
+        fixed bottom-6 right-6 w-16 h-16 rounded-full
         flex items-center justify-center
         transform transition-all duration-200
         hover:scale-110 active:scale-95
@@ -122,7 +106,6 @@ const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete
           ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
           : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
         }
-        ${className}
       `}
       aria-label="Celebrate!"
     >

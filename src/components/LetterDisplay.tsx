@@ -1,27 +1,8 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 
-interface LetterDisplayProps {
-  text: string;
-  isDarkMode: boolean;
-  showConfetti: boolean;
-  zoomLevel: number;
-  onZoomChange: (level: number) => void;
-  showImage: boolean;
-  imageData: { url: string; searchTerm: string } | null;
-}
-
-const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
-  text, 
-  isDarkMode, 
-  showConfetti, 
-  zoomLevel, 
-  onZoomChange, 
-  showImage, 
-  imageData 
-}) => {
+const LetterDisplay = ({ text, isDarkMode, showConfetti, zoomLevel, onZoomChange, showImage, imageQuery }) => {
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isJiggling, setIsJiggling] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTouchDistance = useRef<number | null>(null);
 
@@ -31,16 +12,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => clearTimeout(timer);
   }, [text]);
 
-  // Trigger jiggle animation when confetti shows
-  useEffect(() => {
-    if (showConfetti) {
-      setIsJiggling(true);
-      const timer = setTimeout(() => setIsJiggling(false), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [showConfetti]);
-
-  // Enhanced touch pinch-to-zoom functionality with increased sensitivity
+  // Touch pinch-to-zoom functionality
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -68,7 +40,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         );
         
         const scale = distance / lastTouchDistance.current;
-        const newZoom = Math.max(0.5, Math.min(8, zoomLevel * scale)); // Increased max zoom and sensitivity
+        const newZoom = Math.max(0.5, Math.min(5, zoomLevel * scale)); // Increased max zoom to 5
         onZoomChange(newZoom);
         lastTouchDistance.current = distance;
       }
@@ -91,7 +63,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full">
-      {/* Main letter/word display */}
       <div 
         className={`
           text-8xl md:text-9xl lg:text-[12rem] font-bold
@@ -109,6 +80,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             : '0 4px 20px rgba(0, 0, 0, 0.1)',
           transform: `scale(${zoomLevel}) ${isJiggling ? 'translateY(0)' : ''}`,
           transformOrigin: 'center',
+          // Improved centering for letters with descenders
           lineHeight: '0.8',
           display: 'flex',
           alignItems: 'center',
@@ -119,52 +91,32 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         {text}
       </div>
       
-      {/* Enhanced confetti animation - originates from letter center */}
-      {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="confetti-burst"></div>
+      {/* Image overlay */}
+      {showImage && (
+        <div className={`
+          absolute inset-0 flex items-center justify-center
+          bg-black bg-opacity-50 z-10
+          transition-opacity duration-300
+          ${showImage ? 'opacity-100' : 'opacity-0'}
+        `}>
+          <div className="bg-white rounded-lg p-4 max-w-sm max-h-sm shadow-xl">
+            <img
+              src={`https://source.unsplash.com/400x400/?${encodeURIComponent(imageQuery)}`}
+              alt={imageQuery}
+              className="w-full h-full object-cover rounded"
+              style={{ maxWidth: '300px', maxHeight: '300px' }}
+            />
+            <p className="text-center mt-2 text-gray-800 font-medium text-lg">
+              {imageQuery}
+            </p>
+          </div>
         </div>
       )}
-
-      {/* Redesigned image hint - slides in from side/top without overlay */}
-      {showImage && imageData && (
-        <>
-          {/* Desktop: slide in from right */}
-          <div className={`
-            hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2
-            transition-transform duration-500 ease-out z-10
-            ${showImage ? 'translate-x-0' : 'translate-x-full'}
-          `}>
-            <div className="bg-white rounded-lg p-4 shadow-xl mr-8">
-              <img
-                src={imageData.url}
-                alt={imageData.searchTerm}
-                className="w-64 h-64 object-cover rounded"
-              />
-              <p className="text-center mt-2 text-gray-800 font-medium text-lg">
-                {imageData.searchTerm}
-              </p>
-            </div>
-          </div>
-
-          {/* Mobile: slide in from top */}
-          <div className={`
-            block md:hidden absolute top-0 left-1/2 transform -translate-x-1/2
-            transition-transform duration-500 ease-out z-10
-            ${showImage ? 'translate-y-0' : '-translate-y-full'}
-          `}>
-            <div className="bg-white rounded-lg p-4 shadow-xl mt-8">
-              <img
-                src={imageData.url}
-                alt={imageData.searchTerm}
-                className="w-48 h-48 object-cover rounded"
-              />
-              <p className="text-center mt-2 text-gray-800 font-medium text-base">
-                {imageData.searchTerm}
-              </p>
-            </div>
-          </div>
-        </>
+      
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Confetti particles will be rendered here */}
+        </div>
       )}
     </div>
   );
