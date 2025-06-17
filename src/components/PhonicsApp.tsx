@@ -130,14 +130,14 @@ const PhonicsApp: React.FC = () => {
     
     setShowImage(false);
     
-    // Side navigation zones
-    if (x < width * 0.25) {
-      // Left 25% of screen
+    // Side navigation zones - start from middle of screen
+    if (x < width * 0.4) {
+      // Left 40% of screen (excluding center 20%)
       const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
       setCurrentIndex(newIndex);
       playNavigationAudio();
-    } else if (x > width * 0.75) {
-      // Right 25% of screen
+    } else if (x > width * 0.6) {
+      // Right 40% of screen (excluding center 20%)
       const newIndex = (currentIndex + 1) % currentContent.length;
       setCurrentIndex(newIndex);
       playNavigationAudio();
@@ -181,7 +181,7 @@ const PhonicsApp: React.FC = () => {
         />
       </div>
 
-      {/* Main content area - better mobile positioning */}
+      {/* Main content area */}
       <div 
         className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative cursor-pointer"
         style={{ 
@@ -190,16 +190,16 @@ const PhonicsApp: React.FC = () => {
           minHeight: 'calc(100vh - 300px)'
         }}
         onClick={handleScreenClick}
-        onTouchStart={(e) => {
-          // Prevent double events by only handling touchStart for navigation
+        onTouchEnd={(e) => {
+          // Handle touch events on touchend to prevent double triggering
           handleScreenClick(e);
         }}
       >
         <div className="w-full h-full flex items-center justify-center" style={{ transform: 'translateY(-2vh)' }}>
           <LetterDisplay 
             text={currentDisplayText} 
-            isDarkMode={isDarkMode} 
-            showConfetti={showConfetti} 
+            isDarkMode={isDarkMode}
+            showConfetti={showConfetti}
             zoomLevel={zoomLevel}
             onZoomChange={setZoomLevel}
             showImage={showImage}
@@ -208,49 +208,24 @@ const PhonicsApp: React.FC = () => {
             isClickable={true}
           />
         </div>
+
+        {/* Audio elements */}
+        <audio ref={audioRef} src="/sounds/click.mp3" />
+        <audio ref={celebrationAudioRef} src="/sounds/celebration.mp3" />
       </div>
 
-      {/* Action buttons - fixed positioning with safe area */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none">
-        <div className="flex md:justify-end justify-between items-center px-4 pb-4 md:pb-8 pointer-events-auto"
-             style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-          <div className="md:hidden">
-            <ShowImageButton 
-              onShowImage={handleShowImage} 
-              isDarkMode={isDarkMode}
-            />
-          </div>
-          
-          <div className="hidden md:flex gap-4">
-            <ShowImageButton 
-              onShowImage={handleShowImage} 
-              isDarkMode={isDarkMode}
-            />
-            <ConfettiButton 
-              onCelebrate={handleConfettiTrigger} 
-              onComplete={() => {}}
-              isDarkMode={isDarkMode}
-            />
-          </div>
-          
-          <div className="md:hidden">
-            <ConfettiButton 
-              onCelebrate={handleConfettiTrigger} 
-              onComplete={() => {}}
-              isDarkMode={isDarkMode}
-            />
-          </div>
-        </div>
+      {/* Bottom controls - only confetti trigger */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 flex justify-center items-center gap-4 bg-transparent">
+        <button
+          onClick={handleConfettiTrigger}
+          className={`p-3 rounded-full shadow-lg transition-transform transform hover:scale-110 active:scale-95 ${
+            isDarkMode ? 'bg-violet-600 hover:bg-violet-500' : 'bg-purple-500 hover:bg-purple-400'
+          }`}
+          aria-label="Celebrate!"
+        >
+          🎉
+        </button>
       </div>
-
-      {/* Audio elements - quieter navigation sound */}
-      <audio ref={audioRef} preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAo=" type="audio/wav" />
-      </audio>
-      
-      <audio ref={celebrationAudioRef} preload="auto">
-        <source src="https://www.myinstants.com/media/sounds/confetti-pop-sound.mp3" type="audio/mpeg" />
-      </audio>
     </div>
   );
 };

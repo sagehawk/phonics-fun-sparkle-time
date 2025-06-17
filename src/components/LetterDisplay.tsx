@@ -116,8 +116,13 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full touch-none">
       {/* Confetti animation - behind the letter */}
       {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ zIndex: 1 }}>
-          <div className="confetti-burst"></div>
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ zIndex: -1 }}>
+          <div className="confetti-burst" style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)'
+          }}></div>
         </div>
       )}
 
@@ -152,7 +157,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           WebkitUserSelect: 'none',
           WebkitTouchCallout: 'none',
           WebkitTapHighlightColor: 'transparent',
-          zIndex: 10
+          zIndex: 1
         }}
         onTouchStart={handleLetterClick}
         onClick={handleLetterClick}
