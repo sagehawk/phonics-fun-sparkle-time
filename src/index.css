@@ -122,26 +122,23 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Confetti animation styles */
+/* Improved confetti animation that sprays evenly in all directions */
 .confetti-burst {
   position: relative;
   width: 0;
   height: 0;
 }
 
-@keyframes confetti-burst {
+@keyframes confetti-fall {
   0% {
     transform: translate(0, 0) rotate(0deg) scale(1);
     opacity: 1;
   }
   100% {
     transform: 
-      translate(
-        calc(cos(var(--angle)) * var(--velocity)), 
-        calc(sin(var(--angle)) * var(--velocity) + 400px)
-      ) 
+      translate(var(--vx), var(--vy)) 
       rotate(720deg) 
-      scale(0.5);
+      scale(0.3);
     opacity: 0;
   }
 }
@@ -166,4 +163,12 @@ body {
 /* Safe area for mobile buttons */
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Prevent zoom on mobile while allowing pinch zoom for letter scaling */
+@media screen and (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
 }

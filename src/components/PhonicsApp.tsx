@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import LetterDisplay from './LetterDisplay';
@@ -13,10 +12,11 @@ const PhonicsApp: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(2); // Start larger for kids
+  const [zoomLevel, setZoomLevel] = useState(3);
   const [showImage, setShowImage] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const celebrationAudioRef = useRef<HTMLAudioElement>(null);
 
   // Content arrays for different word lengths
   const singleLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -37,17 +37,16 @@ const PhonicsApp: React.FC = () => {
   const currentContent = getCurrentContent();
 
   const handleConfettiTrigger = () => {
-    if (isAnimating) return; // Prevent multiple triggers
+    if (isAnimating) return;
     setIsAnimating(true);
     setShowConfetti(true);
     
-    // Play sound
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(console.log);
+    // Play celebration sound only for confetti
+    if (celebrationAudioRef.current) {
+      celebrationAudioRef.current.currentTime = 0;
+      celebrationAudioRef.current.play().catch(console.log);
     }
     
-    // Reset animation state
     setTimeout(() => {
       setShowConfetti(false);
       setIsAnimating(false);
@@ -61,7 +60,7 @@ const PhonicsApp: React.FC = () => {
     wordLength,
     () => {
       setShowImage(false);
-      playAudio();
+      playNavigationAudio();
     },
     handleConfettiTrigger
   );
@@ -80,7 +79,7 @@ const PhonicsApp: React.FC = () => {
     }
   };
 
-  const playAudio = () => {
+  const playNavigationAudio = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(console.log);
@@ -97,7 +96,7 @@ const PhonicsApp: React.FC = () => {
   }, [wordLength]);
 
   useEffect(() => {
-    playAudio();
+    playNavigationAudio();
   }, [currentIndex]);
 
   const handleShowImage = async () => {
@@ -107,28 +106,50 @@ const PhonicsApp: React.FC = () => {
     setShowImage(!showImage);
   };
 
-  const handleScreenClick = () => {
-    setShowImage(false);
-  };
-
   const handleLetterAreaClick = (side: 'left' | 'right' | 'center') => {
     if (side === 'center') {
-      // Toggle case for single letters only
       if (wordLength === 1) {
         toggleCaseMode();
       }
     } else if (side === 'left') {
-      // Go to previous letter/word
       const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
       setCurrentIndex(newIndex);
       setShowImage(false);
-      playAudio();
+      playNavigationAudio();
     } else if (side === 'right') {
-      // Go to next letter/word
       const newIndex = (currentIndex + 1) % currentContent.length;
       setCurrentIndex(newIndex);
       setShowImage(false);
-      playAudio();
+      playNavigationAudio();
+    }
+  };
+
+  const handleScreenClick = (e: React.MouseEvent | React.TouchEvent) => {
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0]?.clientX || e.changedTouches[0]?.clientX : e.clientX;
+    const x = clientX - rect.left;
+    const width = rect.width;
+    
+    // Only handle side clicks if not clicking on buttons or letter
+    const clickedElement = e.target as HTMLElement;
+    if (clickedElement.closest('button') || clickedElement.closest('[data-letter-display]')) {
+      return;
+    }
+    
+    setShowImage(false);
+    
+    // Side navigation zones
+    if (x < width * 0.25) {
+      // Left 25% of screen
+      const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
+      setCurrentIndex(newIndex);
+      playNavigationAudio();
+    } else if (x > width * 0.75) {
+      // Right 25% of screen
+      const newIndex = (currentIndex + 1) % currentContent.length;
+      setCurrentIndex(newIndex);
+      playNavigationAudio();
     }
   };
 
@@ -144,14 +165,12 @@ const PhonicsApp: React.FC = () => {
         isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white/50'
       } backdrop-blur-sm flex-shrink-0`}>
         <div className="flex justify-between items-center max-w-6xl mx-auto">
-          {/* Logo */}
           <img 
             src="https://i.imgur.com/wgCFzsE.png" 
             alt="Simple Phonics Logo" 
             className="h-8 md:h-12 object-contain"
           />
           
-          {/* Dark mode toggle */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
             className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
@@ -171,13 +190,18 @@ const PhonicsApp: React.FC = () => {
         />
       </div>
 
-      {/* Main content area - adjusted for better mobile positioning */}
+      {/* Main content area - better mobile positioning */}
       <div 
-        className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative"
-        style={{ paddingTop: '10vh', paddingBottom: '15vh' }} // Better mobile centering
+        className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative cursor-pointer"
+        style={{ 
+          paddingTop: '5vh', 
+          paddingBottom: '20vh',
+          minHeight: 'calc(100vh - 300px)'
+        }}
         onClick={handleScreenClick}
+        onTouchEnd={handleScreenClick}
       >
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center" style={{ transform: 'translateY(-5vh)' }}>
           <LetterDisplay 
             text={currentDisplayText} 
             isDarkMode={isDarkMode} 
@@ -196,7 +220,6 @@ const PhonicsApp: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none">
         <div className="flex md:justify-end justify-between items-center px-4 pb-4 md:pb-8 pointer-events-auto"
              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-          {/* Mobile: lightbulb on left, star on right */}
           <div className="md:hidden">
             <ShowImageButton 
               onShowImage={handleShowImage} 
@@ -204,7 +227,6 @@ const PhonicsApp: React.FC = () => {
             />
           </div>
           
-          {/* Desktop: both buttons together on right */}
           <div className="hidden md:flex gap-4">
             <ShowImageButton 
               onShowImage={handleShowImage} 
@@ -217,7 +239,6 @@ const PhonicsApp: React.FC = () => {
             />
           </div>
           
-          {/* Mobile: star on right */}
           <div className="md:hidden">
             <ConfettiButton 
               onCelebrate={handleConfettiTrigger} 
@@ -228,8 +249,13 @@ const PhonicsApp: React.FC = () => {
         </div>
       </div>
 
-      {/* Audio element with pop sound */}
+      {/* Audio elements */}
       <audio ref={audioRef} preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav" />
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg" />
+      </audio>
+      
+      <audio ref={celebrationAudioRef} preload="auto">
         <source src="https://www.myinstants.com/media/sounds/confetti-pop-sound.mp3" type="audio/mpeg" />
       </audio>
     </div>

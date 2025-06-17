@@ -41,7 +41,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.5 : 0.5; // Increased sensitivity
+      const delta = e.deltaY > 0 ? -0.5 : 0.5;
       const newZoom = Math.max(0.5, Math.min(8, zoomLevel + delta));
       onZoomChange(newZoom);
     };
@@ -112,10 +112,10 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     const x = clientX - rect.left;
     const width = rect.width;
     
-    // Divide the letter into three click zones with better boundaries
-    if (x < width * 0.3) {
+    // More precise click zones for letter interaction
+    if (x < width * 0.25) {
       onLetterAreaClick('left');
-    } else if (x > width * 0.7) {
+    } else if (x > width * 0.75) {
       onLetterAreaClick('right');
     } else {
       onLetterAreaClick('center');
@@ -124,15 +124,16 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full touch-none">
-      {/* Confetti animation - behind the letter with lower z-index */}
+      {/* Confetti animation - behind the letter */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ zIndex: 1 }}>
           <div className="confetti-burst"></div>
         </div>
       )}
 
-      {/* Main letter/word display - higher z-index than confetti */}
+      {/* Main letter/word display */}
       <div 
+        data-letter-display
         className={`
           text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold
           transition-all duration-300 ease-out
@@ -149,7 +150,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           textShadow: isDarkMode 
             ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
             : '0 4px 20px rgba(0, 0, 0, 0.1)',
-          transform: `scale(${zoomLevel})`, // Don't modify zoom during confetti
+          transform: `scale(${zoomLevel})`,
           transformOrigin: 'center',
           lineHeight: '0.8',
           display: 'flex',
@@ -160,7 +161,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           WebkitUserSelect: 'none',
           WebkitTouchCallout: 'none',
           WebkitTapHighlightColor: 'transparent',
-          zIndex: 10 // Higher than confetti
+          zIndex: 10
         }}
         onClick={handleLetterClick}
         onTouchEnd={handleLetterClick}
@@ -171,7 +172,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       {/* Image hint - slides in from side/top without overlay */}
       {showImage && imageData && (
         <>
-          {/* Desktop: slide in from right */}
           <div className={`
             hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2
             transition-transform duration-500 ease-out
@@ -189,7 +189,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             </div>
           </div>
 
-          {/* Mobile: slide in from top */}
           <div className={`
             block md:hidden absolute top-0 left-1/2 transform -translate-x-1/2
             transition-transform duration-500 ease-out

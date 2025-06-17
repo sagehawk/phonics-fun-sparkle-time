@@ -13,15 +13,13 @@ const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete
   const [isTriggering, setIsTriggering] = useState(false);
   
   const triggerConfetti = () => {
-    if (isTriggering) return; // Prevent multiple rapid triggers
+    if (isTriggering) return;
     
     setIsTriggering(true);
     onCelebrate();
     
-    // Create enhanced confetti particles that burst from center
     createConfetti();
     
-    // Reset trigger state
     setTimeout(() => {
       setIsTriggering(false);
     }, 1000);
@@ -38,20 +36,26 @@ const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete
       width: 0;
       height: 0;
       pointer-events: none;
-      z-index: 5;
+      z-index: 1;
       transform: translate(-50%, -50%);
     `;
     
     document.body.appendChild(confettiContainer);
 
-    // Create 80 confetti pieces for great impact, originating from center
-    for (let i = 0; i < 80; i++) {
+    // Create 100 confetti pieces distributed evenly in all directions
+    for (let i = 0; i < 100; i++) {
       const confetti = document.createElement('div');
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const size = Math.random() * 12 + 8;
-      const angle = (Math.PI * 2 * i) / 80; // Distribute evenly in circle
-      const velocity = Math.random() * 250 + 150;
-      const duration = Math.random() * 1.2 + 0.8;
+      const size = Math.random() * 10 + 6;
+      
+      // Distribute evenly in full 360 degrees
+      const angle = (Math.PI * 2 * i) / 100;
+      const velocity = Math.random() * 300 + 200;
+      const duration = Math.random() * 1.5 + 1;
+      
+      // Calculate x and y velocities for even distribution
+      const vx = Math.cos(angle) * velocity;
+      const vy = Math.sin(angle) * velocity;
 
       confetti.style.cssText = `
         position: absolute;
@@ -61,30 +65,31 @@ const ConfettiButton: React.FC<ConfettiButtonProps> = ({ onCelebrate, onComplete
         top: 0;
         left: 0;
         border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
-        animation: confetti-burst ${duration}s ease-out forwards;
+        animation: confetti-fall ${duration}s ease-out forwards;
         transform: rotate(${Math.random() * 360}deg);
-        --angle: ${angle}rad;
-        --velocity: ${velocity}px;
+        --vx: ${vx}px;
+        --vy: ${vy}px;
       `;
 
       confettiContainer.appendChild(confetti);
     }
 
-    // Clean up
     setTimeout(() => {
       if (confettiContainer.parentNode) {
         confettiContainer.parentNode.removeChild(confettiContainer);
       }
-    }, 2500);
+    }, 3000);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     triggerConfetti();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     triggerConfetti();
   };
 
