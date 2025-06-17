@@ -35,6 +35,12 @@ const PhonicsApp: React.FC = () => {
   };
 
   const currentContent = getCurrentContent();
+
+  // Define handleConfettiTrigger before using it in useKeyboardControls
+  const handleConfettiTrigger = () => {
+    setShowConfetti(true);
+  };
+
   const { caseMode } = useKeyboardControls(
     currentContent,
     currentIndex,
@@ -86,10 +92,6 @@ const PhonicsApp: React.FC = () => {
       playAudio();
     }
   }, [currentIndex, audioEnabled]);
-
-  const handleConfettiTrigger = () => {
-    setShowConfetti(true);
-  };
 
   const handleShowImage = async () => {
     if (!showImage) {
@@ -187,7 +189,7 @@ const PhonicsApp: React.FC = () => {
       </div>
 
       {/* Action buttons - responsive positioning */}
-      <div className="fixed bottom-4 left-0 right-0 z-20 pointer-events-none">
+      <div className="fixed bottom-4 left-0 right-0 z-20 pointer-events-none md:bottom-4">
         <div className="flex md:justify-end justify-between items-center px-4 pointer-events-auto">
           {/* Mobile: lightbulb on left, star on right */}
           <div className="md:hidden">
