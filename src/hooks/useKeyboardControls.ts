@@ -9,7 +9,7 @@ export const useKeyboardControls = (
   onContentChange: () => void,
   onConfetti: () => void
 ) => {
-  const [caseMode, setCaseMode] = useState<'lowercase' | 'uppercase'>('lowercase');
+  const [caseMode, setCaseMode] = useState<'lowercase' | 'uppercase'>('uppercase'); // Start with uppercase
 
   const toggleCaseMode = useCallback(() => {
     setCaseMode(prev => prev === 'lowercase' ? 'uppercase' : 'lowercase');

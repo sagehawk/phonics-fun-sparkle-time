@@ -25,7 +25,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   isClickable = false
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isJiggling, setIsJiggling] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTouchDistance = useRef<number | null>(null);
 
@@ -35,15 +34,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => clearTimeout(timer);
   }, [text]);
 
-  // Trigger jiggle animation when confetti shows
-  useEffect(() => {
-    if (showConfetti) {
-      setIsJiggling(true);
-      const timer = setTimeout(() => setIsJiggling(false), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [showConfetti]);
-
   // Wheel zoom functionality
   useEffect(() => {
     const container = containerRef.current;
@@ -51,7 +41,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.3 : 0.3; // Increased sensitivity
+      const delta = e.deltaY > 0 ? -0.5 : 0.5; // Increased sensitivity
       const newZoom = Math.max(0.5, Math.min(8, zoomLevel + delta));
       onZoomChange(newZoom);
     };
@@ -60,14 +50,14 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => container.removeEventListener('wheel', handleWheel);
   }, [zoomLevel, onZoomChange]);
 
-  // Enhanced touch pinch-to-zoom functionality that prevents page zoom
+  // Enhanced touch pinch-to-zoom functionality
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
-        e.preventDefault(); // Prevent page zoom
+        e.preventDefault();
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = Math.sqrt(
@@ -80,7 +70,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && lastTouchDistance.current) {
-        e.preventDefault(); // Prevent page zoom
+        e.preventDefault();
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = Math.sqrt(
@@ -101,7 +91,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       }
     };
 
-    // Add listeners to document to capture all touch events
     document.addEventListener('touchstart', handleTouchStart, { passive: false });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd);
@@ -123,10 +112,10 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     const x = clientX - rect.left;
     const width = rect.width;
     
-    // Divide the letter into three click zones
-    if (x < width * 0.33) {
+    // Divide the letter into three click zones with better boundaries
+    if (x < width * 0.3) {
       onLetterAreaClick('left');
-    } else if (x > width * 0.67) {
+    } else if (x > width * 0.7) {
       onLetterAreaClick('right');
     } else {
       onLetterAreaClick('center');
@@ -135,25 +124,24 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full touch-none">
-      {/* Confetti animation - behind the letter */}
+      {/* Confetti animation - behind the letter with lower z-index */}
       {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ zIndex: 1 }}>
           <div className="confetti-burst"></div>
         </div>
       )}
 
-      {/* Main letter/word display */}
+      {/* Main letter/word display - higher z-index than confetti */}
       <div 
         className={`
           text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold
           transition-all duration-300 ease-out
           ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
-          ${isJiggling ? 'animate-bounce' : ''}
           ${isDarkMode ? 'text-white' : 'text-gray-800'}
           font-nunito tracking-wider
           flex items-center justify-center
           ${isClickable ? 'cursor-pointer hover:opacity-80' : 'cursor-pointer'}
-          select-none z-10 relative
+          select-none relative
           touch-manipulation
         `}
         style={{ 
@@ -161,7 +149,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           textShadow: isDarkMode 
             ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
             : '0 4px 20px rgba(0, 0, 0, 0.1)',
-          transform: `scale(${isJiggling ? zoomLevel * 1.1 : zoomLevel})`,
+          transform: `scale(${zoomLevel})`, // Don't modify zoom during confetti
           transformOrigin: 'center',
           lineHeight: '0.8',
           display: 'flex',
@@ -171,7 +159,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           userSelect: 'none',
           WebkitUserSelect: 'none',
           WebkitTouchCallout: 'none',
-          WebkitTapHighlightColor: 'transparent'
+          WebkitTapHighlightColor: 'transparent',
+          zIndex: 10 // Higher than confetti
         }}
         onClick={handleLetterClick}
         onTouchEnd={handleLetterClick}
@@ -185,9 +174,9 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           {/* Desktop: slide in from right */}
           <div className={`
             hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2
-            transition-transform duration-500 ease-out z-20
+            transition-transform duration-500 ease-out
             ${showImage ? 'translate-x-0' : 'translate-x-full'}
-          `}>
+          `} style={{ zIndex: 20 }}>
             <div className="bg-white rounded-lg p-4 shadow-xl mr-8">
               <img
                 src={imageData.url}
@@ -203,9 +192,9 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           {/* Mobile: slide in from top */}
           <div className={`
             block md:hidden absolute top-0 left-1/2 transform -translate-x-1/2
-            transition-transform duration-500 ease-out z-20
+            transition-transform duration-500 ease-out
             ${showImage ? 'translate-y-0' : '-translate-y-full'}
-          `}>
+          `} style={{ zIndex: 20 }}>
             <div className="bg-white rounded-lg p-4 shadow-xl mt-8">
               <img
                 src={imageData.url}
