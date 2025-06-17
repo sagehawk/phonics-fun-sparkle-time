@@ -26,8 +26,8 @@ export const useKeyboardControls = (
       return;
     }
 
-    // Toggle case mode with Shift key
-    if (key === 'shift') {
+    // Toggle case mode with Shift key (only for single letters)
+    if (key === 'shift' && wordLength === 1) {
       event.preventDefault();
       toggleCaseMode();
       return;
@@ -50,34 +50,25 @@ export const useKeyboardControls = (
       return;
     }
 
-    // Only respond to letter keys
-    if (!key.match(/^[a-z]$/)) {
+    // Only respond to letter keys for single letter mode
+    if (!key.match(/^[a-z]$/) || wordLength !== 1) {
       return;
     }
 
     // For single letters mode, jump directly to the letter
-    if (wordLength === 1) {
-      const letterIndex = key.charCodeAt(0) - 97; // 'a' = 97
-      if (letterIndex !== currentIndex) {
-        setCurrentIndex(letterIndex);
-        onContentChange();
-      }
+    const letterIndex = key.charCodeAt(0) - 97; // 'a' = 97
+    if (letterIndex !== currentIndex) {
+      setCurrentIndex(letterIndex);
+      onContentChange();
     }
   }, [currentContent.length, currentIndex, setCurrentIndex, wordLength, onContentChange, toggleCaseMode, onConfetti]);
 
-  const handleWheel = useCallback((event: WheelEvent) => {
-    event.preventDefault();
-    // This will be handled by the LetterDisplay component
-  }, []);
-
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('wheel', handleWheel);
     };
-  }, [handleKeyDown, handleWheel]);
+  }, [handleKeyDown]);
 
   return { caseMode, toggleCaseMode };
 };

@@ -106,10 +106,7 @@ const PhonicsApp: React.FC = () => {
 
   const handleLetterAreaClick = (side: 'left' | 'right' | 'center') => {
     if (side === 'center') {
-      // Toggle case for single letters only
-      if (wordLength === 1) {
-        // This will be handled by the keyboard controls hook
-      }
+      // Toggle case for single letters only - handled by keyboard controls hook
     } else if (side === 'left') {
       // Go to previous letter/word
       const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
@@ -130,22 +127,22 @@ const PhonicsApp: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
+    <div className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${
       isDarkMode 
         ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900' 
         : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
-    } flex flex-col select-none`}>
+    } flex flex-col select-none overflow-hidden`}>
       
       {/* Header with logo and controls */}
-      <div className={`p-4 border-b transition-colors ${
+      <div className={`p-2 md:p-4 border-b transition-colors ${
         isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white/50'
-      } backdrop-blur-sm`}>
+      } backdrop-blur-sm flex-shrink-0`}>
         <div className="flex justify-between items-center max-w-6xl mx-auto">
           {/* Logo */}
           <img 
             src="https://i.imgur.com/wgCFzsE.png" 
             alt="Simple Phonics Logo" 
-            className="h-12 md:h-20 object-contain"
+            className="h-8 md:h-12 object-contain"
           />
           
           {/* Dark mode toggle */}
@@ -154,13 +151,13 @@ const PhonicsApp: React.FC = () => {
             className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
             aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
-            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
       </div>
 
       {/* Word Length Selector */}
-      <div className="p-4 flex justify-center">
+      <div className="p-2 md:p-4 flex justify-center flex-shrink-0">
         <WordLengthSlider 
           value={wordLength} 
           onChange={setWordLength} 
@@ -168,9 +165,9 @@ const PhonicsApp: React.FC = () => {
         />
       </div>
 
-      {/* Main content area */}
+      {/* Main content area - takes remaining space */}
       <div 
-        className="flex-grow flex flex-col items-center justify-center p-4 min-h-0"
+        className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative"
         onClick={handleScreenClick}
       >
         <div className="w-full h-full flex items-center justify-center">
@@ -188,8 +185,8 @@ const PhonicsApp: React.FC = () => {
         </div>
       </div>
 
-      {/* Action buttons - responsive positioning */}
-      <div className="fixed bottom-4 left-0 right-0 z-20 pointer-events-none md:bottom-4">
+      {/* Action buttons - fixed positioning with safe area */}
+      <div className="fixed bottom-4 left-0 right-0 z-20 pointer-events-none md:bottom-4 pb-safe">
         <div className="flex md:justify-end justify-between items-center px-4 pointer-events-auto">
           {/* Mobile: lightbulb on left, star on right */}
           <div className="md:hidden">

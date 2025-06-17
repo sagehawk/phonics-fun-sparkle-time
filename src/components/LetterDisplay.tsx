@@ -51,7 +51,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.2 : 0.2; // Increased sensitivity
+      const delta = e.deltaY > 0 ? -0.3 : 0.3; // Increased sensitivity
       const newZoom = Math.max(0.5, Math.min(8, zoomLevel + delta));
       onZoomChange(newZoom);
     };
@@ -60,13 +60,14 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => container.removeEventListener('wheel', handleWheel);
   }, [zoomLevel, onZoomChange]);
 
-  // Enhanced touch pinch-to-zoom functionality
+  // Enhanced touch pinch-to-zoom functionality that prevents page zoom
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
+        e.preventDefault(); // Prevent page zoom
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = Math.sqrt(
@@ -79,7 +80,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && lastTouchDistance.current) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent page zoom
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = Math.sqrt(
@@ -94,28 +95,32 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       }
     };
 
-    const handleTouchEnd = () => {
-      lastTouchDistance.current = null;
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        lastTouchDistance.current = null;
+      }
     };
 
-    container.addEventListener('touchstart', handleTouchStart);
-    container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('touchend', handleTouchEnd);
+    // Add listeners to document to capture all touch events
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
 
     return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [zoomLevel, onZoomChange]);
 
-  const handleLetterClick = (e: React.MouseEvent) => {
+  const handleLetterClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (!onLetterAreaClick) return;
     
     e.stopPropagation();
     
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const clientX = 'touches' in e ? e.touches[0]?.clientX || e.changedTouches[0]?.clientX : e.clientX;
+    const x = clientX - rect.left;
     const width = rect.width;
     
     // Divide the letter into three click zones
@@ -129,7 +134,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   };
 
   return (
-    <div ref={containerRef} className="relative flex items-center justify-center w-full h-full">
+    <div ref={containerRef} className="relative flex items-center justify-center w-full h-full touch-none">
       {/* Confetti animation - behind the letter */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
@@ -140,7 +145,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       {/* Main letter/word display */}
       <div 
         className={`
-          text-8xl md:text-9xl lg:text-[12rem] font-bold
+          text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold
           transition-all duration-300 ease-out
           ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
           ${isJiggling ? 'animate-bounce' : ''}
@@ -149,6 +154,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           flex items-center justify-center
           ${isClickable ? 'cursor-pointer hover:opacity-80' : 'cursor-pointer'}
           select-none z-10 relative
+          touch-manipulation
         `}
         style={{ 
           fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
@@ -161,9 +167,14 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: '1em'
+          minHeight: '1em',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTouchCallout: 'none',
+          WebkitTapHighlightColor: 'transparent'
         }}
         onClick={handleLetterClick}
+        onTouchEnd={handleLetterClick}
       >
         {text}
       </div>
