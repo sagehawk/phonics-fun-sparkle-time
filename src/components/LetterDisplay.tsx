@@ -159,7 +159,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           WebkitTapHighlightColor: 'transparent',
           zIndex: 1
         }}
-        onTouchStart={handleLetterClick}
+        onTouchEnd={handleLetterClick}
         onClick={handleLetterClick}
       >
         {text}

@@ -18,6 +18,7 @@ const PhonicsApp: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const celebrationAudioRef = useRef<HTMLAudioElement>(null);
+  const touchHandledRef = useRef(false);
 
   // Content arrays for different word lengths
   const singleLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -144,6 +145,23 @@ const PhonicsApp: React.FC = () => {
     }
   };
 
+  const handleScreenTouchEnd = (e: React.TouchEvent) => {
+    touchHandledRef.current = true;
+    handleScreenClick(e);
+    // Reset after a short delay to allow click to fire if it's a genuine click and not a touch-generated one
+    setTimeout(() => {
+      touchHandledRef.current = false;
+    }, 300);
+  };
+
+  const handleScreenMouseClick = (e: React.MouseEvent) => {
+    if (touchHandledRef.current) {
+      // If a touch event was just handled, prevent the click event from firing
+      return;
+    }
+    handleScreenClick(e);
+  };
+
   return (
     <div className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${
       isDarkMode 
@@ -189,11 +207,8 @@ const PhonicsApp: React.FC = () => {
           paddingBottom: '15vh',
           minHeight: 'calc(100vh - 300px)'
         }}
-        onClick={handleScreenClick}
-        onTouchEnd={(e) => {
-          // Handle touch events on touchend to prevent double triggering
-          handleScreenClick(e);
-        }}
+        onClick={handleScreenMouseClick}
+        onTouchEnd={handleScreenTouchEnd}
       >
         <div className="w-full h-full flex items-center justify-center" style={{ transform: 'translateY(-2vh)' }}>
           <LetterDisplay 
