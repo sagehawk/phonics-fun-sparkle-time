@@ -105,21 +105,11 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   const handleLetterClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (!onLetterAreaClick) return;
     
+    e.preventDefault();
     e.stopPropagation();
     
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0]?.clientX || e.changedTouches[0]?.clientX : e.clientX;
-    const x = clientX - rect.left;
-    const width = rect.width;
-    
-    // More precise click zones for letter interaction
-    if (x < width * 0.25) {
-      onLetterAreaClick('left');
-    } else if (x > width * 0.75) {
-      onLetterAreaClick('right');
-    } else {
-      onLetterAreaClick('center');
-    }
+    // Always trigger center action when clicking the letter
+    onLetterAreaClick('center');
   };
 
   return (
@@ -141,9 +131,10 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           ${isDarkMode ? 'text-white' : 'text-gray-800'}
           font-nunito tracking-wider
           flex items-center justify-center
-          ${isClickable ? 'cursor-pointer hover:opacity-80' : 'cursor-pointer'}
+          ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
           select-none relative
           touch-manipulation
+          letter-display-no-highlight
         `}
         style={{ 
           fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
@@ -163,8 +154,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           WebkitTapHighlightColor: 'transparent',
           zIndex: 10
         }}
+        onTouchStart={handleLetterClick}
         onClick={handleLetterClick}
-        onTouchEnd={handleLetterClick}
       >
         {text}
       </div>

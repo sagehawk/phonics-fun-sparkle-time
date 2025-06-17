@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import LetterDisplay from './LetterDisplay';
@@ -12,7 +13,7 @@ const PhonicsApp: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(3);
+  const [zoomLevel, setZoomLevel] = useState(4); // Increased default size for kids
   const [showImage, setShowImage] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -82,6 +83,7 @@ const PhonicsApp: React.FC = () => {
   const playNavigationAudio = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
+      audioRef.current.volume = 0.3; // Quieter volume
       audioRef.current.play().catch(console.log);
     }
   };
@@ -108,19 +110,8 @@ const PhonicsApp: React.FC = () => {
 
   const handleLetterAreaClick = (side: 'left' | 'right' | 'center') => {
     if (side === 'center') {
-      if (wordLength === 1) {
-        toggleCaseMode();
-      }
-    } else if (side === 'left') {
-      const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
-      setCurrentIndex(newIndex);
-      setShowImage(false);
-      playNavigationAudio();
-    } else if (side === 'right') {
-      const newIndex = (currentIndex + 1) % currentContent.length;
-      setCurrentIndex(newIndex);
-      setShowImage(false);
-      playNavigationAudio();
+      // Toggle case for any word length when tapping the letter/word
+      toggleCaseMode();
     }
   };
 
@@ -194,14 +185,17 @@ const PhonicsApp: React.FC = () => {
       <div 
         className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative cursor-pointer"
         style={{ 
-          paddingTop: '5vh', 
-          paddingBottom: '20vh',
+          paddingTop: '2vh', 
+          paddingBottom: '15vh',
           minHeight: 'calc(100vh - 300px)'
         }}
         onClick={handleScreenClick}
-        onTouchEnd={handleScreenClick}
+        onTouchStart={(e) => {
+          // Prevent double events by only handling touchStart for navigation
+          handleScreenClick(e);
+        }}
       >
-        <div className="w-full h-full flex items-center justify-center" style={{ transform: 'translateY(-5vh)' }}>
+        <div className="w-full h-full flex items-center justify-center" style={{ transform: 'translateY(-2vh)' }}>
           <LetterDisplay 
             text={currentDisplayText} 
             isDarkMode={isDarkMode} 
@@ -249,10 +243,9 @@ const PhonicsApp: React.FC = () => {
         </div>
       </div>
 
-      {/* Audio elements */}
+      {/* Audio elements - quieter navigation sound */}
       <audio ref={audioRef} preload="auto">
-        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav" />
-        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg" />
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBC+G0vPHciMFLojO8tiOOwgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAo=" type="audio/wav" />
       </audio>
       
       <audio ref={celebrationAudioRef} preload="auto">

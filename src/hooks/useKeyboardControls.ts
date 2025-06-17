@@ -13,8 +13,8 @@ export const useKeyboardControls = (
 
   const toggleCaseMode = useCallback(() => {
     setCaseMode(prev => prev === 'lowercase' ? 'uppercase' : 'lowercase');
-    onContentChange();
-  }, [onContentChange]);
+    // Don't play navigation sound for case toggle - it's a different action
+  }, []);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toLowerCase();
@@ -26,8 +26,8 @@ export const useKeyboardControls = (
       return;
     }
 
-    // Toggle case mode with Shift key (only for single letters)
-    if (key === 'shift' && wordLength === 1) {
+    // Toggle case mode with Shift key (for any word length)
+    if (key === 'shift') {
       event.preventDefault();
       toggleCaseMode();
       return;

@@ -153,6 +153,26 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Specific class to completely remove any highlight on letter display */
+.letter-display-no-highlight {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+
+.letter-display-no-highlight:focus,
+.letter-display-no-highlight:active,
+.letter-display-no-highlight:hover {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  background-color: transparent !important;
+}
+
 /* Mobile viewport fix for address bar */
 @supports (height: 100dvh) {
   .min-h-screen {
