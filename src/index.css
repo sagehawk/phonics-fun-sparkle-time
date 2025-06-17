@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -100,4 +101,36 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Confetti animation styles */
+.confetti-burst {
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+@keyframes confetti-burst {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: 
+      translate(
+        calc(cos(var(--angle)) * var(--velocity)), 
+        calc(sin(var(--angle)) * var(--velocity) + 400px)
+      ) 
+      rotate(720deg) 
+      scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* Make text unselectable globally */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

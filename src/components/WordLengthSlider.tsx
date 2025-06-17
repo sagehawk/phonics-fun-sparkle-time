@@ -1,7 +1,13 @@
 
 import React from 'react';
 
-const WordLengthSlider = ({ value, onChange, isDarkMode }) => {
+interface WordLengthSliderProps {
+  value: number;
+  onChange: (value: number) => void;
+  isDarkMode: boolean;
+}
+
+const WordLengthSlider: React.FC<WordLengthSliderProps> = ({ value, onChange, isDarkMode }) => {
   const labels = ['Letters', '2-Letter Words', '3-Letter Words', '4-Letter Words'];
   
   return (

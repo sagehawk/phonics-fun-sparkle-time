@@ -9,7 +9,7 @@ interface LetterDisplayProps {
   onZoomChange: (level: number) => void;
   showImage: boolean;
   imageData: { url: string; searchTerm: string } | null;
-  onLetterClick?: () => void;
+  onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
   isClickable?: boolean;
 }
 
@@ -21,7 +21,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   onZoomChange, 
   showImage, 
   imageData,
-  onLetterClick,
+  onLetterAreaClick,
   isClickable = false
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -44,7 +44,23 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     }
   }, [showConfetti]);
 
-  // Enhanced touch pinch-to-zoom functionality with increased sensitivity
+  // Wheel zoom functionality
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.2 : 0.2; // Increased sensitivity
+      const newZoom = Math.max(0.5, Math.min(8, zoomLevel + delta));
+      onZoomChange(newZoom);
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [zoomLevel, onZoomChange]);
+
+  // Enhanced touch pinch-to-zoom functionality
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -72,7 +88,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         );
         
         const scale = distance / lastTouchDistance.current;
-        const newZoom = Math.max(0.5, Math.min(8, zoomLevel * scale)); // Increased max zoom and sensitivity
+        const newZoom = Math.max(0.5, Math.min(8, zoomLevel * scale));
         onZoomChange(newZoom);
         lastTouchDistance.current = distance;
       }
@@ -94,14 +110,33 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   }, [zoomLevel, onZoomChange]);
 
   const handleLetterClick = (e: React.MouseEvent) => {
-    if (isClickable && onLetterClick) {
-      e.stopPropagation(); // Prevent triggering parent click handlers
-      onLetterClick();
+    if (!onLetterAreaClick) return;
+    
+    e.stopPropagation();
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    
+    // Divide the letter into three click zones
+    if (x < width * 0.33) {
+      onLetterAreaClick('left');
+    } else if (x > width * 0.67) {
+      onLetterAreaClick('right');
+    } else {
+      onLetterAreaClick('center');
     }
   };
 
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full">
+      {/* Confetti animation - behind the letter */}
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
+          <div className="confetti-burst"></div>
+        </div>
+      )}
+
       {/* Main letter/word display */}
       <div 
         className={`
@@ -112,14 +147,15 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           ${isDarkMode ? 'text-white' : 'text-gray-800'}
           font-nunito tracking-wider
           flex items-center justify-center
-          ${isClickable ? 'cursor-pointer hover:opacity-80' : ''}
+          ${isClickable ? 'cursor-pointer hover:opacity-80' : 'cursor-pointer'}
+          select-none z-10 relative
         `}
         style={{ 
           fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
           textShadow: isDarkMode 
             ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
             : '0 4px 20px rgba(0, 0, 0, 0.1)',
-          transform: `scale(${isJiggling ? zoomLevel * 1.1 : zoomLevel})`, // Maintain zoom level during jiggle
+          transform: `scale(${isJiggling ? zoomLevel * 1.1 : zoomLevel})`,
           transformOrigin: 'center',
           lineHeight: '0.8',
           display: 'flex',
@@ -131,21 +167,14 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       >
         {text}
       </div>
-      
-      {/* Enhanced confetti animation - originates from letter center */}
-      {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="confetti-burst"></div>
-        </div>
-      )}
 
-      {/* Redesigned image hint - slides in from side/top without overlay */}
+      {/* Image hint - slides in from side/top without overlay */}
       {showImage && imageData && (
         <>
           {/* Desktop: slide in from right */}
           <div className={`
             hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2
-            transition-transform duration-500 ease-out z-10
+            transition-transform duration-500 ease-out z-20
             ${showImage ? 'translate-x-0' : 'translate-x-full'}
           `}>
             <div className="bg-white rounded-lg p-4 shadow-xl mr-8">
@@ -163,7 +192,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           {/* Mobile: slide in from top */}
           <div className={`
             block md:hidden absolute top-0 left-1/2 transform -translate-x-1/2
-            transition-transform duration-500 ease-out z-10
+            transition-transform duration-500 ease-out z-20
             ${showImage ? 'translate-y-0' : '-translate-y-full'}
           `}>
             <div className="bg-white rounded-lg p-4 shadow-xl mt-8">
