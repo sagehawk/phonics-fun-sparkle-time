@@ -1,73 +1,89 @@
-# Welcome to your Lovable project
+# Simple Phonics phonic-app
 
-## Project info
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg) ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-**URL**: https://lovable.dev/projects/37ef42dd-826d-479b-950c-d6a114d6ce77
+An interactive, multi-language web application designed to make learning phonics fun and accessible for children everywhere.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+### [🚀 View the Live Demo](https://phonics.sajjadhaq.com)
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/37ef42dd-826d-479b-950c-d6a114d6ce77) and start prompting.
+<!-- 
+  IMPORTANT: Add a high-quality GIF or screenshot of the app in action here!
+  A GIF showing the language switching, zooming, and confetti is highly recommended.
+-->
+<p align="center">
+  <img src="https-link-to-your-screenshot-or-gif.gif" alt="Simple Phonics App Demo" width="800"/>
+</p>
 
-Changes made via Lovable will be committed automatically to this repo.
+## ✨ Key Features
 
-**Use your preferred IDE**
+-   **🌍 Multi-Language Support:** Full support for English, **Arabic (RTL)**, Japanese, Korean, and Persian, with proper font rendering and layout direction.
+-   **👆 Intuitive Touch Controls:** Custom-built gesture handling for tapping, swiping, and pinch-to-zoom on mobile devices.
+-   **🔠 Progressive Learning:** A structured path from learning individual letters to mastering 4-letter words.
+-   **🖼️ Visual Hints:** Image cues to help children associate words with real-world objects.
+-   **🎉 Fun Feedback:** A celebratory confetti explosion for successful learning moments to keep kids engaged.
+-   **📱 Fully Responsive Design:** A flawless and intuitive experience on both desktop and mobile devices.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+-   **Frontend:** React, TypeScript
+-   **Styling:** Tailwind CSS
+-   **State Management:** React Hooks (useState, useEffect, useContext)
+-   **Gesture Handling:** Custom Touch Event Listeners
+-   **Fonts:** Google Fonts API for dynamic loading of international character sets
+-   **Audio:** Web Audio API for interactive sound feedback
 
-Follow these steps:
+## 🧠 Technical Highlights & Challenges Solved
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+This project presented several unique front-end challenges. Here’s how I solved them:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+#### 1. Architecting for Right-to-Left (RTL) Languages
+-   **Challenge:** Standard CSS layouts break when switching to RTL languages like Arabic and Persian. Text alignment, margins, and element order must be reversed.
+-   **Solution:** I implemented a dynamic styling system using CSS logical properties (`margin-inline-start`, `text-align: start`, etc.) and a direction-aware state in React. This allows the entire UI to seamlessly flip its layout based on the selected language, ensuring a native-feeling experience for RTL users.
 
-# Step 3: Install the necessary dependencies.
-npm i
+#### 2. Building Custom Mobile Gesture Controls
+-   **Challenge:** Default browser touch events can be unreliable, leading to conflicts between tapping, double-tapping, and multi-finger gestures (like pinch-to-zoom).
+-   **Solution:** I engineered custom React hooks that precisely manage touch events. By tracking the number of active touch points and separating `touchstart` from `touchend` events, I was able to create distinct, conflict-free handlers for single-tap navigation and multi-touch zooming, providing a robust, native-like mobile experience.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+#### 3. Dynamic, Overflow-Proof Zooming
+-   **Challenge:** Longer words would overflow the screen when zoomed in too far, breaking the layout. The maximum zoom level needed to adapt to the content.
+-   **Solution:** I developed a function that dynamically calculates the maximum allowable zoom level based on the current word's length and the viewport's width. This calculation runs every time a new word is displayed, ensuring that users can zoom for readability without ever breaking the UI.
 
-**Edit a file directly in GitHub**
+## 🚀 Getting Started
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+To run this project locally:
 
-**Use GitHub Codespaces**
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/your-username/your-repo-name.git
+    ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+2.  **Navigate to the project directory:**
+    ```sh
+    cd your-repo-name
+    ```
 
-## What technologies are used for this project?
+3.  **Install dependencies:**
+    ```sh
+    npm install
+    ```
 
-This project is built with:
+4.  **Start the development server:**
+    ```sh
+    npm run dev
+    ```
+    The application will be available at `http://localhost:5173` (or another port if specified).
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## ✍️ Author
 
-## How can I deploy this project?
+**Sajjad Haq**
 
-Simply open [Lovable](https://lovable.dev/projects/37ef42dd-826d-479b-950c-d6a114d6ce77) and click on Share -> Publish.
+-   **GitHub:** [@sagehawk](https://github.com/sagehawk)
+-   **LinkedIn:** [Sajjad Haq](https://www.linkedin.com/in/sajjadhaq/)
 
-## Can I connect a custom domain to my Lovable project?
+## 📜 License
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
