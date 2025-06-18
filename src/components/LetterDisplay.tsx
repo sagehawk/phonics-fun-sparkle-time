@@ -126,6 +126,19 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return language === 'ar' ? 'rtl' : 'ltr';
   };
 
+  // Split transliteration for multi-letter words and reverse order for Arabic
+  const getTransliterationParts = () => {
+    if (!transliteration || text.length === 1) {
+      return [transliteration];
+    }
+    
+    const parts = transliteration.split('-');
+    // For Arabic multi-letter words, reverse the transliteration order to match RTL text
+    return language === 'ar' ? parts.reverse() : parts;
+  };
+
+  const transliterationParts = getTransliterationParts();
+
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full touch-none">
       {/* Confetti animation */}
@@ -164,8 +177,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
               : '0 4px 20px rgba(0, 0, 0, 0.1)',
             transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
-            transformOrigin: 'center',
-            lineHeight: '0.8',
+            transformOrigin: 'center center',
+            lineHeight: language === 'ar' ? '1.2' : '0.8',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -174,29 +187,51 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
             WebkitTapHighlightColor: 'transparent',
-            zIndex: 1
+            zIndex: 1,
+            marginBottom: language === 'ar' && showTransliteration && transliteration ? '0.2em' : '0'
           }}
           onTouchEnd={handleLetterClick}
           onClick={handleLetterClick}
         >
-          {text}
+          {text.length === 1 ? (
+            text
+          ) : (
+            <div className="flex" style={{ direction: getTextDirection(), gap: '0.1em' }}>
+              {text.split('').map((char, index) => (
+                <span key={index} className="relative">
+                  {char}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Transliteration display for Arabic */}
         {language === 'ar' && showTransliteration && transliteration && (
           <div 
             className={`
-              text-lg md:text-xl lg:text-2xl font-medium mt-4
+              text-lg md:text-xl lg:text-2xl font-medium
               ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}
               text-center
             `}
             style={{
-              transform: `scale(${Math.min(zoomLevel * 0.6, maxZoom * 0.6)})`,
+              transform: `scale(${Math.min(zoomLevel * 0.5, maxZoom * 0.5)})`,
               transformOrigin: 'center top',
-              fontFamily: '"Nunito", system-ui, -apple-system, sans-serif'
+              fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
+              marginTop: text.length === 1 ? '0.5em' : '0.3em'
             }}
           >
-            {transliteration}
+            {text.length === 1 ? (
+              transliteration
+            ) : (
+              <div className="flex justify-center gap-4" style={{ direction: 'rtl' }}>
+                {transliterationParts.map((part, index) => (
+                  <span key={index} className="text-center">
+                    {part}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
