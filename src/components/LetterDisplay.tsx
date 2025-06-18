@@ -13,6 +13,8 @@ interface LetterDisplayProps {
   isClickable?: boolean;
   maxZoom?: number;
   language: string;
+  showTransliteration?: boolean;
+  transliteration?: string;
 }
 
 const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
@@ -26,7 +28,9 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   onLetterAreaClick,
   isClickable = false,
   maxZoom = 8,
-  language
+  language,
+  showTransliteration = false,
+  transliteration = ''
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +42,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => clearTimeout(timer);
   }, [text]);
 
-  // Wheel zoom functionality - works anywhere on the screen
+  // Zoom functionality that only affects the letter
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -47,12 +51,11 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       onZoomChange(newZoom);
     };
 
-    // Add to document to capture wheel events anywhere
     document.addEventListener('wheel', handleWheel, { passive: false });
     return () => document.removeEventListener('wheel', handleWheel);
   }, [zoomLevel, onZoomChange, maxZoom]);
 
-  // Enhanced touch pinch-to-zoom functionality - works anywhere on the screen
+  // Touch pinch-to-zoom functionality
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
@@ -107,7 +110,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    // Always trigger center action when clicking the letter
     onLetterAreaClick('center');
   };
 
@@ -115,24 +117,18 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     switch (language) {
       case 'ar':
         return '"Noto Sans Arabic", "Arabic UI Display", system-ui, sans-serif';
-      case 'ja':
-        return '"Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif';
-      case 'ko':
-        return '"Noto Sans KR", "Malgun Gothic", "Apple Gothic", system-ui, sans-serif';
-      case 'fa':
-        return '"Noto Sans Arabic", "Tahoma", system-ui, sans-serif';
       default:
         return '"Nunito", system-ui, -apple-system, sans-serif';
     }
   };
 
   const getTextDirection = () => {
-    return (language === 'ar' || language === 'fa') ? 'rtl' : 'ltr';
+    return language === 'ar' ? 'rtl' : 'ltr';
   };
 
   return (
     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full touch-none">
-      {/* Confetti animation - behind the letter */}
+      {/* Confetti animation */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ zIndex: -1 }}>
           <div className="confetti-burst" style={{
@@ -144,44 +140,65 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         </div>
       )}
 
-      {/* Main letter/word display */}
-      <div 
-        data-letter-display
-        className={`
-          text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold
-          transition-all duration-300 ease-out
-          ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
-          ${isDarkMode ? 'text-white' : 'text-orange-600'}
-          tracking-wider
-          flex items-center justify-center
-          ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
-          select-none relative
-          touch-manipulation
-          letter-display-no-highlight
-        `}
-        style={{ 
-          fontFamily: getFontFamily(),
-          direction: getTextDirection(),
-          textShadow: isDarkMode 
-            ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
-            : '0 4px 20px rgba(255, 165, 0, 0.2)',
-          transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
-          transformOrigin: 'center',
-          lineHeight: '0.8',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '1em',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          WebkitTouchCallout: 'none',
-          WebkitTapHighlightColor: 'transparent',
-          zIndex: 1
-        }}
-        onTouchEnd={handleLetterClick}
-        onClick={handleLetterClick}
-      >
-        {text}
+      {/* Main letter/word display container */}
+      <div className="flex flex-col items-center justify-center">
+        {/* Main letter/word display */}
+        <div 
+          data-letter-display
+          className={`
+            text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold
+            transition-all duration-300 ease-out
+            ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
+            ${isDarkMode ? 'text-white' : 'text-gray-800'}
+            tracking-wider
+            flex items-center justify-center
+            ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
+            select-none relative
+            touch-manipulation
+            letter-display-no-highlight
+          `}
+          style={{ 
+            fontFamily: getFontFamily(),
+            direction: getTextDirection(),
+            textShadow: isDarkMode 
+              ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
+              : '0 4px 20px rgba(0, 0, 0, 0.1)',
+            transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
+            transformOrigin: 'center',
+            lineHeight: '0.8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '1em',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            zIndex: 1
+          }}
+          onTouchEnd={handleLetterClick}
+          onClick={handleLetterClick}
+        >
+          {text}
+        </div>
+
+        {/* Transliteration display for Arabic */}
+        {language === 'ar' && showTransliteration && transliteration && (
+          <div 
+            className={`
+              text-lg md:text-xl lg:text-2xl font-medium mt-4
+              ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}
+              text-center
+            `}
+            style={{
+              transform: `scale(${Math.min(zoomLevel * 0.6, maxZoom * 0.6)})`,
+              transformOrigin: 'center top',
+              fontFamily: '"Nunito", system-ui, -apple-system, sans-serif'
+            }}
+          >
+            {transliteration}
+          </div>
+        )}
       </div>
 
       {/* Image hint - slides in from side/top without overlay */}

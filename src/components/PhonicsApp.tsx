@@ -15,11 +15,12 @@ const PhonicsApp: React.FC = () => {
   const [showImage, setShowImage] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [language, setLanguage] = useState('en');
+  const [showTransliteration, setShowTransliteration] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const touchHandledRef = useRef(false);
   const touchCountRef = useRef(0);
 
-  // Content arrays for different languages and word lengths
+  // Content arrays for English and Arabic only
   const getContent = () => {
     const content: Record<string, Record<number, string[]>> = {
       en: {
@@ -33,28 +34,28 @@ const PhonicsApp: React.FC = () => {
         2: ['أم', 'أب', 'بر', 'جد', 'دم', 'رز', 'سم', 'شم', 'طب', 'فم', 'قد', 'كل', 'لا', 'ما', 'نم', 'هو', 'يد'],
         3: ['أسد', 'بحر', 'تين', 'جمل', 'حصان', 'خبز', 'دجاج', 'ذئب', 'رمان', 'زهر', 'سمك', 'شجر', 'صقر', 'ضفدع', 'طير', 'ظبي', 'عين', 'غزال', 'فيل', 'قطة', 'كتاب', 'لحم', 'ماء', 'نار', 'هلال', 'وردة', 'يوم'],
         4: ['أرنب', 'برتقال', 'تفاح', 'جزر', 'حليب', 'خروف', 'ديك', 'ذهب', 'رقبة', 'زيتون', 'سلحفاة', 'شمس', 'صباح', 'ضوء', 'طاولة', 'ظل', 'عصفور', 'غابة', 'فراشة', 'قمر', 'كرسي', 'ليمون', 'مفتاح', 'نجمة', 'هدية', 'وجه', 'يد']
-      },
-      ja: {
-        1: ['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ', 'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ', 'を', 'ん'],
-        2: ['いえ', 'うみ', 'えき', 'おか', 'かお', 'きつね', 'くま', 'けむり', 'こえ', 'さる', 'しお', 'すし', 'せみ', 'そら', 'たこ', 'ちず', 'つき', 'てがみ', 'とり', 'なつ', 'にわ', 'ぬの', 'ねこ', 'のど', 'はな', 'ひつじ', 'ふね', 'へび', 'ほし', 'まど', 'みず', 'むし', 'めがね', 'もり', 'やま', 'ゆき', 'よる', 'らいおん', 'りんご', 'るす', 'れいぞうこ', 'ろうそく', 'わに'],
-        3: ['あかちゃん', 'いちご', 'うさぎ', 'えんぴつ', 'おもちゃ', 'かばん', 'きりん', 'くじら', 'けしゴム', 'こうえん', 'さくら', 'しんぶん', 'すいか', 'せんせい', 'そうじき', 'たまご', 'ちょうちょ', 'つくえ', 'てれび', 'といれ', 'なまえ', 'にんじん', 'ぬいぐるみ', 'ねずみ', 'のりもの', 'はさみ', 'ひこうき', 'ふとん', 'へや', 'ほうき', 'まくら', 'みかん', 'むかで', 'めだか', 'もも', 'やきゅう', 'ゆうびん', 'よこはま', 'らっぱ', 'りす', 'るーる', 'れもん', 'ろぼっと', 'わかめ'],
-        4: ['あひる', 'いす', 'うでどけい', 'えほん', 'おかし', 'かみ', 'きって', 'くつした', 'けいたい', 'こっぷ', 'さかな', 'しゃしん', 'すずめ', 'せっけん', 'そふぁ', 'たおる', 'ちゃわん', 'つみき', 'てぶくろ', 'とけい', 'なべ', 'にほん', 'ぬりえ', 'ねくたい', 'のーと', 'はぶらし', 'ひまわり', 'ふうせん', 'へるめっと', 'ほっぺ', 'まつり', 'みらい', 'むらさき', 'めがね', 'もちもち', 'やさい', 'ゆめ', 'よっと', 'らじお', 'りょこう', 'るーる', 'れっしゃ', 'ろーそく', 'わーど']
-      },
-      ko: {
-        1: ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', 'ㅏ', 'ㅑ', 'ㅓ', 'ㅕ', 'ㅗ', 'ㅛ', 'ㅜ', 'ㅠ', 'ㅡ', 'ㅣ'],
-        2: ['가구', '나무', '다리', '라면', '마음', '바다', '사과', '아기', '자동차', '차', '카페', '타이어', '파일', '하늘'],
-        3: ['가방', '나비', '다람쥐', '라디오', '마법', '바나나', '사자', '아침', '자전거', '차례', '카메라', '타월', '파티', '하마'],
-        4: ['가족', '나라', '다이아몬드', '라이온', '마시멜로', '바이올린', '사진기', '아이스크림', '자석', '차량', '카드', '타조', '파인애플', '하트']
-      },
-      fa: {
-        1: ['ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه', 'ی'],
-        2: ['آب', 'باد', 'پا', 'تاج', 'ثواب', 'جام', 'چای', 'حال', 'خانه', 'دار', 'ذوق', 'راه', 'زار', 'ژاله', 'ساز', 'شاه', 'صاف', 'ضرب', 'طاق', 'ظرف', 'عاج', 'غار', 'فال', 'قاب', 'کار', 'گاو', 'لاک', 'ماه', 'نان', 'واژه', 'هوا', 'یار'],
-        3: ['آسمان', 'برف', 'پرنده', 'تمساح', 'ثعلب', 'جنگل', 'چراغ', 'حیوان', 'خرگوش', 'دریا', 'ذغال', 'رنگ', 'زردآلو', 'ژیان', 'سیب', 'شیر', 'صندلی', 'ضربان', 'طوطی', 'ظهر', 'عنکبوت', 'غذا', 'فیل', 'قلم', 'کتاب', 'گربه', 'لیمو', 'موز', 'نارنج', 'ورزش', 'هدیه', 'یخ'],
-        4: ['آرامش', 'برادر', 'پروانه', 'تلویزیون', 'ثروت', 'جادوگر', 'چمدان', 'حمام', 'خورشید', 'دوست', 'ذهن', 'رستوران', 'زمستان', 'ژورنال', 'سفر', 'شکلات', 'صبحانه', 'ضیافت', 'طبیعت', 'ظرافت', 'عروسک', 'غروب', 'فرش', 'قهوه', 'کامپیوتر', 'گیاه', 'لباس', 'موسیقی', 'نوشیدنی', 'ورق', 'هنرمند', 'یادگیری']
       }
     };
     
     return content[language]?.[wordLength] || content.en[wordLength];
+  };
+
+  // Arabic transliteration mapping
+  const getArabicTransliteration = (arabicText: string): string => {
+    const transliterationMap: Record<string, string> = {
+      'ا': 'alif', 'ب': 'ba', 'ت': 'ta', 'ث': 'tha', 'ج': 'jeem', 'ح': 'ha', 'خ': 'kha',
+      'د': 'dal', 'ذ': 'thal', 'ر': 'ra', 'ز': 'zay', 'س': 'seen', 'ش': 'sheen',
+      'ص': 'sad', 'ض': 'dad', 'ط': 'ta', 'ظ': 'za', 'ع': 'ayn', 'غ': 'ghayn',
+      'ف': 'fa', 'ق': 'qaf', 'ك': 'kaf', 'ل': 'lam', 'م': 'meem', 'ن': 'noon',
+      'ه': 'ha', 'و': 'waw', 'ي': 'ya'
+    };
+
+    if (wordLength === 1) {
+      return transliterationMap[arabicText] || arabicText;
+    } else {
+      // For words, transliterate each letter
+      return arabicText.split('').map(char => transliterationMap[char] || char).join('-');
+    }
   };
 
   const currentContent = getContent();
@@ -99,7 +100,7 @@ const PhonicsApp: React.FC = () => {
   const playNavigationAudio = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.volume = 0.1;
+      audioRef.current.volume = 0.3;
       audioRef.current.play().catch(console.log);
     }
   };
@@ -107,7 +108,8 @@ const PhonicsApp: React.FC = () => {
   const getMaxZoom = () => {
     const baseMax = 8;
     const lengthFactor = wordLength === 1 ? 1 : wordLength === 2 ? 0.8 : wordLength === 3 ? 0.6 : 0.4;
-    return baseMax * lengthFactor;
+    const transliterationFactor = (language === 'ar' && showTransliteration) ? 0.7 : 1;
+    return baseMax * lengthFactor * transliterationFactor;
   };
 
   const currentDisplayText = caseMode === 'uppercase' 
@@ -117,11 +119,12 @@ const PhonicsApp: React.FC = () => {
   useEffect(() => {
     setCurrentIndex(0);
     setShowImage(false);
+    setShowTransliteration(false);
     const maxZoom = getMaxZoom();
     if (zoomLevel > maxZoom) {
       setZoomLevel(maxZoom);
     }
-  }, [wordLength, language, zoomLevel]);
+  }, [wordLength, language]);
 
   useEffect(() => {
     playNavigationAudio();
@@ -136,7 +139,11 @@ const PhonicsApp: React.FC = () => {
 
   const handleLetterAreaClick = (side: 'left' | 'right' | 'center') => {
     if (side === 'center') {
-      toggleCaseMode();
+      if (language === 'ar') {
+        setShowTransliteration(!showTransliteration);
+      } else {
+        toggleCaseMode();
+      }
     }
   };
 
@@ -195,28 +202,18 @@ const PhonicsApp: React.FC = () => {
     <div className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${
       isDarkMode 
         ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
-        : 'bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50'
+        : 'bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50'
     } flex flex-col select-none overflow-hidden`}>
       
-      {/* Improved Header */}
+      {/* Header */}
       <div className={`px-4 py-3 border-b transition-colors ${
-        isDarkMode ? 'border-gray-700 bg-gray-800/90' : 'border-orange-200 bg-white/90'
+        isDarkMode ? 'border-gray-700 bg-gray-800/90' : 'border-gray-200 bg-white/90'
       } backdrop-blur-sm flex-shrink-0 shadow-sm`}>
         <div className="flex justify-between items-center max-w-7xl mx-auto">
-          <div className="flex items-center">
-            <img 
-              src="https://i.imgur.com/wgCFzsE.png" 
-              alt="Simple Phonics Logo" 
-              className="h-10 md:h-12 object-contain mr-4"
-            />
-            <div className="hidden sm:block">
-              <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-orange-800'}`}>
-                Simple Phonics
-              </h1>
-              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-orange-600'}`}>
-                Interactive Learning
-              </p>
-            </div>
+          <div>
+            <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+              Simple Phonics
+            </h1>
           </div>
           
           <div className="flex items-center gap-3">
@@ -237,7 +234,7 @@ const PhonicsApp: React.FC = () => {
               className={`p-2.5 rounded-lg transition-colors ${
                 isDarkMode 
                   ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
-                  : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
               }`}
               aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
@@ -272,10 +269,12 @@ const PhonicsApp: React.FC = () => {
             isClickable={true}
             maxZoom={getMaxZoom()}
             language={language}
+            showTransliteration={showTransliteration}
+            transliteration={language === 'ar' ? getArabicTransliteration(currentContent[currentIndex]) : ''}
           />
         </div>
 
-        <audio ref={audioRef} src="/sounds/nav-click.mp3" />
+        <audio ref={audioRef} src="data:audio/wav;base64,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" />
       </div>
     </div>
   );

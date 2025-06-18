@@ -8,8 +8,6 @@ interface WordLengthSliderProps {
 }
 
 const WordLengthSlider: React.FC<WordLengthSliderProps> = ({ value, onChange, isDarkMode }) => {
-  const labels = ['Letters', '2-Letter Words', '3-Letter Words', '4-Letter Words'];
-  
   return (
     <div className="flex items-center gap-2">
       {[1, 2, 3, 4].map((level) => (
@@ -20,12 +18,12 @@ const WordLengthSlider: React.FC<WordLengthSliderProps> = ({ value, onChange, is
             px-2 py-1 md:px-3 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200
             ${value === level 
               ? (isDarkMode 
-                  ? 'bg-orange-600 text-white shadow-lg' 
-                  : 'bg-orange-500 text-white shadow-lg'
+                  ? 'bg-blue-600 text-white shadow-lg' 
+                  : 'bg-gray-800 text-white shadow-lg'
                 )
               : (isDarkMode 
                   ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
-                  : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 )
             }
           `}
