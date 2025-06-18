@@ -2,8 +2,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import LetterDisplay from './LetterDisplay';
-import ConfettiButton from './ConfettiButton';
-import ShowImageButton from './ShowImageButton';
 import WordLengthSlider from './WordLengthSlider';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { useImageAPI } from '../hooks/useImageAPI';
@@ -13,12 +11,12 @@ const PhonicsApp: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(4); // Increased default size for kids
+  const [zoomLevel, setZoomLevel] = useState(3);
   const [showImage, setShowImage] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const celebrationAudioRef = useRef<HTMLAudioElement>(null);
   const touchHandledRef = useRef(false);
+  const touchCountRef = useRef(0);
 
   // Content arrays for different word lengths
   const singleLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -42,12 +40,6 @@ const PhonicsApp: React.FC = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     setShowConfetti(true);
-    
-    // Play celebration sound only for confetti
-    if (celebrationAudioRef.current) {
-      celebrationAudioRef.current.currentTime = 0;
-      celebrationAudioRef.current.play().catch(console.log);
-    }
     
     setTimeout(() => {
       setShowConfetti(false);
@@ -84,9 +76,16 @@ const PhonicsApp: React.FC = () => {
   const playNavigationAudio = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.volume = 0.3; // Quieter volume
+      audioRef.current.volume = 0.2;
       audioRef.current.play().catch(console.log);
     }
+  };
+
+  // Calculate maximum zoom based on word length and screen size
+  const getMaxZoom = () => {
+    const baseMax = 8;
+    const lengthFactor = wordLength === 1 ? 1 : wordLength === 2 ? 0.8 : wordLength === 3 ? 0.6 : 0.4;
+    return baseMax * lengthFactor;
   };
 
   const currentDisplayText = caseMode === 'uppercase' 
@@ -96,7 +95,12 @@ const PhonicsApp: React.FC = () => {
   useEffect(() => {
     setCurrentIndex(0);
     setShowImage(false);
-  }, [wordLength]);
+    // Auto-adjust zoom if current zoom exceeds new maximum
+    const maxZoom = getMaxZoom();
+    if (zoomLevel > maxZoom) {
+      setZoomLevel(maxZoom);
+    }
+  }, [wordLength, zoomLevel]);
 
   useEffect(() => {
     playNavigationAudio();
@@ -111,12 +115,16 @@ const PhonicsApp: React.FC = () => {
 
   const handleLetterAreaClick = (side: 'left' | 'right' | 'center') => {
     if (side === 'center') {
-      // Toggle case for any word length when tapping the letter/word
       toggleCaseMode();
     }
   };
 
   const handleScreenClick = (e: React.MouseEvent | React.TouchEvent) => {
+    // Check if this is a multi-touch event
+    if ('touches' in e && e.touches.length > 1) {
+      return;
+    }
+    
     const target = e.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0]?.clientX || e.changedTouches[0]?.clientX : e.clientX;
@@ -131,32 +139,36 @@ const PhonicsApp: React.FC = () => {
     
     setShowImage(false);
     
-    // Side navigation zones - start from middle of screen
+    // Side navigation zones
     if (x < width * 0.4) {
-      // Left 40% of screen (excluding center 20%)
       const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
       setCurrentIndex(newIndex);
       playNavigationAudio();
     } else if (x > width * 0.6) {
-      // Right 40% of screen (excluding center 20%)
       const newIndex = (currentIndex + 1) % currentContent.length;
       setCurrentIndex(newIndex);
       playNavigationAudio();
     }
   };
 
+  const handleScreenTouchStart = (e: React.TouchEvent) => {
+    touchCountRef.current = e.touches.length;
+  };
+
   const handleScreenTouchEnd = (e: React.TouchEvent) => {
-    touchHandledRef.current = true;
-    handleScreenClick(e);
-    // Reset after a short delay to allow click to fire if it's a genuine click and not a touch-generated one
-    setTimeout(() => {
-      touchHandledRef.current = false;
-    }, 300);
+    // Only handle single touch
+    if (touchCountRef.current === 1 && e.changedTouches.length === 1) {
+      touchHandledRef.current = true;
+      handleScreenClick(e);
+      setTimeout(() => {
+        touchHandledRef.current = false;
+      }, 300);
+    }
+    touchCountRef.current = 0;
   };
 
   const handleScreenMouseClick = (e: React.MouseEvent) => {
     if (touchHandledRef.current) {
-      // If a touch event was just handled, prevent the click event from firing
       return;
     }
     handleScreenClick(e);
@@ -165,13 +177,13 @@ const PhonicsApp: React.FC = () => {
   return (
     <div className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${
       isDarkMode 
-        ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900' 
-        : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
+        : 'bg-gradient-to-br from-orange-50 via-yellow-50 to-blue-50'
     } flex flex-col select-none overflow-hidden`}>
       
-      {/* Header with logo and controls */}
+      {/* Header with logo, learning mode, and dark mode toggle */}
       <div className={`p-2 md:p-4 border-b transition-colors ${
-        isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-white/50'
+        isDarkMode ? 'border-gray-700 bg-gray-800/50' : 'border-orange-200 bg-orange-100/50'
       } backdrop-blur-sm flex-shrink-0`}>
         <div className="flex justify-between items-center max-w-6xl mx-auto">
           <img 
@@ -180,23 +192,26 @@ const PhonicsApp: React.FC = () => {
             className="h-8 md:h-12 object-contain"
           />
           
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
-            aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          <div className="flex items-center gap-4">
+            <WordLengthSlider 
+              value={wordLength} 
+              onChange={setWordLength} 
+              isDarkMode={isDarkMode} 
+            />
+            
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode 
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                  : 'bg-orange-200 text-orange-800 hover:bg-orange-300'
+              }`}
+              aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* Word Length Selector */}
-      <div className="p-2 md:p-4 flex justify-center flex-shrink-0">
-        <WordLengthSlider 
-          value={wordLength} 
-          onChange={setWordLength} 
-          isDarkMode={isDarkMode} 
-        />
       </div>
 
       {/* Main content area */}
@@ -204,42 +219,30 @@ const PhonicsApp: React.FC = () => {
         className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative cursor-pointer"
         style={{ 
           paddingTop: '2vh', 
-          paddingBottom: '15vh',
-          minHeight: 'calc(100vh - 300px)'
+          paddingBottom: '2vh',
+          minHeight: 'calc(100vh - 120px)'
         }}
         onClick={handleScreenMouseClick}
+        onTouchStart={handleScreenTouchStart}
         onTouchEnd={handleScreenTouchEnd}
       >
-        <div className="w-full h-full flex items-center justify-center" style={{ transform: 'translateY(-2vh)' }}>
+        <div className="w-full h-full flex items-center justify-center">
           <LetterDisplay 
             text={currentDisplayText} 
             isDarkMode={isDarkMode}
             showConfetti={showConfetti}
             zoomLevel={zoomLevel}
-            onZoomChange={setZoomLevel}
+            onZoomChange={(level) => setZoomLevel(Math.min(level, getMaxZoom()))}
             showImage={showImage}
             imageData={currentImageData}
             onLetterAreaClick={handleLetterAreaClick}
             isClickable={true}
+            maxZoom={getMaxZoom()}
           />
         </div>
 
         {/* Audio elements */}
         <audio ref={audioRef} src="/sounds/click.mp3" />
-        <audio ref={celebrationAudioRef} src="/sounds/celebration.mp3" />
-      </div>
-
-      {/* Bottom controls - only confetti trigger */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 flex justify-center items-center gap-4 bg-transparent">
-        <button
-          onClick={handleConfettiTrigger}
-          className={`p-3 rounded-full shadow-lg transition-transform transform hover:scale-110 active:scale-95 ${
-            isDarkMode ? 'bg-violet-600 hover:bg-violet-500' : 'bg-purple-500 hover:bg-purple-400'
-          }`}
-          aria-label="Celebrate!"
-        >
-          🎉
-        </button>
       </div>
     </div>
   );

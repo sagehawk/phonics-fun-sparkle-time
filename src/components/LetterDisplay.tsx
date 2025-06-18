@@ -11,6 +11,7 @@ interface LetterDisplayProps {
   imageData: { url: string; searchTerm: string } | null;
   onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
   isClickable?: boolean;
+  maxZoom?: number;
 }
 
 const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
@@ -22,7 +23,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   showImage, 
   imageData,
   onLetterAreaClick,
-  isClickable = false
+  isClickable = false,
+  maxZoom = 8
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -130,10 +132,10 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       <div 
         data-letter-display
         className={`
-          text-6xl md:text-8xl lg:text-9xl xl:text-[10rem] font-bold
+          text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold
           transition-all duration-300 ease-out
           ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
-          ${isDarkMode ? 'text-white' : 'text-gray-800'}
+          ${isDarkMode ? 'text-white' : 'text-orange-600'}
           font-nunito tracking-wider
           flex items-center justify-center
           ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
@@ -145,8 +147,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
           textShadow: isDarkMode 
             ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
-            : '0 4px 20px rgba(0, 0, 0, 0.1)',
-          transform: `scale(${zoomLevel})`,
+            : '0 4px 20px rgba(255, 165, 0, 0.2)',
+          transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
           transformOrigin: 'center',
           lineHeight: '0.8',
           display: 'flex',
