@@ -153,8 +153,14 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         </div>
       )}
 
-      {/* Main letter/word display container */}
-      <div className="flex flex-col items-center justify-center">
+      {/* Main letter/word display container - this is the key fix */}
+      <div 
+        className="flex flex-col items-center justify-center"
+        style={{
+          transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
+          transformOrigin: 'center center'
+        }}
+      >
         {/* Main letter/word display */}
         <div 
           data-letter-display
@@ -176,8 +182,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             textShadow: isDarkMode 
               ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
               : '0 4px 20px rgba(0, 0, 0, 0.1)',
-            transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
-            transformOrigin: 'center center',
             lineHeight: language === 'ar' ? '1.2' : '0.8',
             display: 'flex',
             alignItems: 'center',
@@ -187,8 +191,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
             WebkitTapHighlightColor: 'transparent',
-            zIndex: 1,
-            marginBottom: language === 'ar' && showTransliteration && transliteration ? '0.2em' : '0'
+            zIndex: 1
           }}
           onTouchEnd={handleLetterClick}
           onClick={handleLetterClick}
@@ -206,7 +209,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           )}
         </div>
 
-        {/* Transliteration display for Arabic */}
+        {/* Transliteration display for Arabic - now properly positioned relative to the scaled parent */}
         {language === 'ar' && showTransliteration && transliteration && (
           <div 
             className={`
@@ -215,10 +218,9 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               text-center
             `}
             style={{
-              transform: `scale(${Math.min(zoomLevel * 0.5, maxZoom * 0.5)})`,
-              transformOrigin: 'center top',
               fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
-              marginTop: text.length === 1 ? '0.5em' : '0.3em'
+              marginTop: '0.3em', // Using em units so it scales with the parent
+              fontSize: '0.4em' // Relative to the parent's font size
             }}
           >
             {text.length === 1 ? (
