@@ -12,6 +12,7 @@ interface LetterDisplayProps {
   onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
   isClickable?: boolean;
   maxZoom?: number;
+  language: string;
 }
 
 const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
@@ -24,7 +25,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   imageData,
   onLetterAreaClick,
   isClickable = false,
-  maxZoom = 8
+  maxZoom = 8,
+  language
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,27 +38,22 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => clearTimeout(timer);
   }, [text]);
 
-  // Wheel zoom functionality
+  // Wheel zoom functionality - works anywhere on the screen
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.5 : 0.5;
-      const newZoom = Math.max(0.5, Math.min(8, zoomLevel + delta));
+      const newZoom = Math.max(0.5, Math.min(maxZoom, zoomLevel + delta));
       onZoomChange(newZoom);
     };
 
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [zoomLevel, onZoomChange]);
+    // Add to document to capture wheel events anywhere
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    return () => document.removeEventListener('wheel', handleWheel);
+  }, [zoomLevel, onZoomChange, maxZoom]);
 
-  // Enhanced touch pinch-to-zoom functionality
+  // Enhanced touch pinch-to-zoom functionality - works anywhere on the screen
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault();
@@ -81,7 +78,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         );
         
         const scale = distance / lastTouchDistance.current;
-        const newZoom = Math.max(0.5, Math.min(8, zoomLevel * scale));
+        const newZoom = Math.max(0.5, Math.min(maxZoom, zoomLevel * scale));
         onZoomChange(newZoom);
         lastTouchDistance.current = distance;
       }
@@ -102,7 +99,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [zoomLevel, onZoomChange]);
+  }, [zoomLevel, onZoomChange, maxZoom]);
 
   const handleLetterClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (!onLetterAreaClick) return;
@@ -112,6 +109,25 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     
     // Always trigger center action when clicking the letter
     onLetterAreaClick('center');
+  };
+
+  const getFontFamily = () => {
+    switch (language) {
+      case 'ar':
+        return '"Noto Sans Arabic", "Arabic UI Display", system-ui, sans-serif';
+      case 'ja':
+        return '"Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif';
+      case 'ko':
+        return '"Noto Sans KR", "Malgun Gothic", "Apple Gothic", system-ui, sans-serif';
+      case 'fa':
+        return '"Noto Sans Arabic", "Tahoma", system-ui, sans-serif';
+      default:
+        return '"Nunito", system-ui, -apple-system, sans-serif';
+    }
+  };
+
+  const getTextDirection = () => {
+    return (language === 'ar' || language === 'fa') ? 'rtl' : 'ltr';
   };
 
   return (
@@ -136,7 +152,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           transition-all duration-300 ease-out
           ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
           ${isDarkMode ? 'text-white' : 'text-orange-600'}
-          font-nunito tracking-wider
+          tracking-wider
           flex items-center justify-center
           ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
           select-none relative
@@ -144,7 +160,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           letter-display-no-highlight
         `}
         style={{ 
-          fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
+          fontFamily: getFontFamily(),
+          direction: getTextDirection(),
           textShadow: isDarkMode 
             ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
             : '0 4px 20px rgba(255, 165, 0, 0.2)',
