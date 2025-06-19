@@ -10,6 +10,7 @@ interface LetterDisplayProps {
   showImage: boolean;
   imageData: { url: string; searchTerm: string } | null;
   onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
+  onLetterLongPress?: () => void;
   isClickable?: boolean;
   maxZoom?: number;
   language: string;
@@ -26,6 +27,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   showImage, 
   imageData,
   onLetterAreaClick,
+  onLetterLongPress,
   isClickable = false,
   maxZoom = 8,
   language,
@@ -33,6 +35,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   transliteration = ''
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTouchDistance = useRef<number | null>(null);
 
@@ -42,7 +45,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => clearTimeout(timer);
   }, [text]);
 
-  // Zoom functionality that only affects the letter
+  // Improved zoom functionality that works anywhere on screen
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -55,7 +58,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return () => document.removeEventListener('wheel', handleWheel);
   }, [zoomLevel, onZoomChange, maxZoom]);
 
-  // Touch pinch-to-zoom functionality
+  // Improved touch pinch-to-zoom functionality that works anywhere
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
@@ -93,6 +96,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       }
     };
 
+    // Attach to document instead of just the container for better coverage
     document.addEventListener('touchstart', handleTouchStart, { passive: false });
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd);
@@ -104,37 +108,75 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     };
   }, [zoomLevel, onZoomChange, maxZoom]);
 
-  const handleLetterClick = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!onLetterAreaClick) return;
+  const handleTouchStart = () => {
+    const timer = setTimeout(() => {
+      if (onLetterLongPress) {
+        onLetterLongPress();
+      }
+    }, 500); // 500ms for long press
+    setLongPressTimer(timer);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
     
-    e.preventDefault();
-    e.stopPropagation();
+    // Only trigger click if it wasn't a long press
+    if (onLetterAreaClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      onLetterAreaClick('center');
+    }
+  };
+
+  const handleMouseDown = () => {
+    const timer = setTimeout(() => {
+      if (onLetterLongPress) {
+        onLetterLongPress();
+      }
+    }, 500);
+    setLongPressTimer(timer);
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
     
-    onLetterAreaClick('center');
+    if (onLetterAreaClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      onLetterAreaClick('center');
+    }
   };
 
   const getFontFamily = () => {
     switch (language) {
       case 'ar':
-        return '"Noto Sans Arabic", "Arabic UI Display", system-ui, sans-serif';
+        return '"Amiri", "Noto Sans Arabic", "Arabic UI Display", system-ui, sans-serif';
+      case 'fa':
+        return '"Vazirmatn", "Noto Sans Arabic", system-ui, sans-serif';
       default:
         return '"Nunito", system-ui, -apple-system, sans-serif';
     }
   };
 
   const getTextDirection = () => {
-    return language === 'ar' ? 'rtl' : 'ltr';
+    return (language === 'ar' || language === 'fa') ? 'rtl' : 'ltr';
   };
 
-  // Split transliteration for multi-letter words and reverse order for Arabic
+  // Safe transliteration handling with null checks
   const getTransliterationParts = () => {
-    if (!transliteration || text.length === 1) {
-      return [transliteration];
+    if (!transliteration || !text || text.length === 1) {
+      return transliteration ? [transliteration] : [];
     }
     
     const parts = transliteration.split('-');
-    // For Arabic multi-letter words, reverse the transliteration order to match RTL text
-    return language === 'ar' ? parts.reverse() : parts;
+    // For Arabic/Farsi multi-letter words, reverse the transliteration order to match RTL text
+    return (language === 'ar' || language === 'fa') ? parts.reverse() : parts;
   };
 
   const transliterationParts = getTransliterationParts();
@@ -153,7 +195,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         </div>
       )}
 
-      {/* Main letter/word display container - this is the key fix */}
+      {/* Main scaling container */}
       <div 
         className="flex flex-col items-center justify-center"
         style={{
@@ -182,7 +224,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             textShadow: isDarkMode 
               ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
               : '0 4px 20px rgba(0, 0, 0, 0.1)',
-            lineHeight: language === 'ar' ? '1.2' : '0.8',
+            lineHeight: (language === 'ar' || language === 'fa') ? '1.2' : '0.8',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -191,26 +233,36 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
             WebkitTapHighlightColor: 'transparent',
-            zIndex: 1
+            zIndex: 1,
+            // Better positioning for mobile
+            marginTop: window.innerWidth <= 768 ? '10vh' : '0'
           }}
-          onTouchEnd={handleLetterClick}
-          onClick={handleLetterClick}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
         >
-          {text.length === 1 ? (
+          {text && text.length === 1 ? (
             text
-          ) : (
-            <div className="flex" style={{ direction: getTextDirection(), gap: '0.1em' }}>
+          ) : text ? (
+            <div 
+              className="flex" 
+              style={{ 
+                direction: getTextDirection(), 
+                gap: (language === 'ar' || language === 'fa') ? '0' : '0.1em' // Connected letters for Arabic/Farsi
+              }}
+            >
               {text.split('').map((char, index) => (
                 <span key={index} className="relative">
                   {char}
                 </span>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
 
-        {/* Transliteration display for Arabic - now properly positioned relative to the scaled parent */}
-        {language === 'ar' && showTransliteration && transliteration && (
+        {/* Transliteration display - now properly positioned and scaled */}
+        {(language === 'ar' || language === 'fa') && showTransliteration && transliteration && (
           <div 
             className={`
               text-lg md:text-xl lg:text-2xl font-medium
@@ -219,26 +271,28 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             `}
             style={{
               fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
-              marginTop: '0.3em', // Using em units so it scales with the parent
-              fontSize: '0.4em' // Relative to the parent's font size
+              marginTop: '0.3em',
+              fontSize: '0.4em',
+              maxWidth: '100%',
+              overflow: 'hidden'
             }}
           >
-            {text.length === 1 ? (
+            {text && text.length === 1 ? (
               transliteration
-            ) : (
+            ) : transliterationParts.length > 0 ? (
               <div className="flex justify-center gap-4" style={{ direction: 'rtl' }}>
                 {transliterationParts.map((part, index) => (
                   <span key={index} className="text-center">
-                    {part}
+                    {part || ''}
                   </span>
                 ))}
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
 
-      {/* Image hint - slides in from side/top without overlay */}
+      {/* Image hint */}
       {showImage && imageData && (
         <>
           <div className={`

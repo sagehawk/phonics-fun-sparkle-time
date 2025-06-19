@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Amiri:wght@400;700&family=Vazirmatn:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -201,6 +201,11 @@ body {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
   }
+  
+  /* Better mobile positioning */
+  [data-letter-display] {
+    margin-top: 5vh !important;
+  }
 }
 
 /* Improved button styles */
@@ -217,4 +222,24 @@ body {
 button:focus-visible {
   outline: 2px solid #374151;
   outline-offset: 2px;
+}
+
+/* Arabic font improvements */
+[lang="ar"], .arabic-text {
+  font-family: "Amiri", "Noto Sans Arabic", "Arabic UI Display", system-ui, sans-serif;
+  font-feature-settings: "liga", "calt", "kern";
+  text-rendering: optimizeLegibility;
+}
+
+/* Farsi font improvements */
+[lang="fa"], .farsi-text {
+  font-family: "Vazirmatn", "Noto Sans Arabic", system-ui, sans-serif;
+  font-feature-settings: "liga", "calt", "kern";
+  text-rendering: optimizeLegibility;
+}
+
+/* Better Arabic text connection */
+.arabic-connected {
+  letter-spacing: -0.02em;
+  word-spacing: 0.1em;
 }

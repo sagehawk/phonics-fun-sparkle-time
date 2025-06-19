@@ -20,7 +20,7 @@ const PhonicsApp: React.FC = () => {
   const touchHandledRef = useRef(false);
   const touchCountRef = useRef(0);
 
-  // Content arrays for English and Arabic only
+  // Content arrays for English, Arabic, and Farsi
   const getContent = () => {
     const content: Record<string, Record<number, string[]>> = {
       en: {
@@ -34,27 +34,44 @@ const PhonicsApp: React.FC = () => {
         2: ['أم', 'أب', 'بر', 'جد', 'دم', 'رز', 'سم', 'شم', 'طب', 'فم', 'قد', 'كل', 'لا', 'ما', 'نم', 'هو', 'يد'],
         3: ['أسد', 'بحر', 'تين', 'جمل', 'حصان', 'خبز', 'دجاج', 'ذئب', 'رمان', 'زهر', 'سمك', 'شجر', 'صقر', 'ضفدع', 'طير', 'ظبي', 'عين', 'غزال', 'فيل', 'قطة', 'كتاب', 'لحم', 'ماء', 'نار', 'هلال', 'وردة', 'يوم'],
         4: ['أرنب', 'برتقال', 'تفاح', 'جزر', 'حليب', 'خروف', 'ديك', 'ذهب', 'رقبة', 'زيتون', 'سلحفاة', 'شمس', 'صباح', 'ضوء', 'طاولة', 'ظل', 'عصفور', 'غابة', 'فراشة', 'قمر', 'كرسي', 'ليمون', 'مفتاح', 'نجمة', 'هدية', 'وجه', 'يد']
+      },
+      fa: {
+        1: ['ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'و', 'ه', 'ی'],
+        2: ['آب', 'نان', 'گل', 'دل', 'سر', 'چشم', 'دست', 'پا', 'خانه', 'درخت'],
+        3: ['سگ', 'گربه', 'کتاب', 'ماهی', 'پرنده', 'خورشید', 'ماه', 'ستاره', 'آسمان', 'زمین'],
+        4: ['انسان', 'دوست', 'خانواده', 'مدرسه', 'کلاس', 'معلم', 'دانش‌آموز', 'درس', 'امتحان', 'تعطیلات']
       }
     };
     
-    return content[language]?.[wordLength] || content.en[wordLength];
+    return content[language]?.[wordLength] || content.en[wordLength] || [];
   };
 
-  // Arabic transliteration mapping
-  const getArabicTransliteration = (arabicText: string): string => {
-    const transliterationMap: Record<string, string> = {
+  // Enhanced transliteration mapping for Arabic and Farsi
+  const getTransliteration = (text: string, lang: string): string => {
+    const arabicMap: Record<string, string> = {
       'ا': 'alif', 'ب': 'ba', 'ت': 'ta', 'ث': 'tha', 'ج': 'jeem', 'ح': 'ha', 'خ': 'kha',
       'د': 'dal', 'ذ': 'thal', 'ر': 'ra', 'ز': 'zay', 'س': 'seen', 'ش': 'sheen',
       'ص': 'sad', 'ض': 'dad', 'ط': 'ta', 'ظ': 'za', 'ع': 'ayn', 'غ': 'ghayn',
       'ف': 'fa', 'ق': 'qaf', 'ك': 'kaf', 'ل': 'lam', 'م': 'meem', 'ن': 'noon',
-      'ه': 'ha', 'و': 'waw', 'ي': 'ya'
+      'ه': 'ha', 'و': 'waw', 'ي': 'ya', 'أ': 'alif', 'إ': 'alif', 'آ': 'alif'
     };
 
-    if (wordLength === 1) {
-      return transliterationMap[arabicText] || arabicText;
+    const farsiMap: Record<string, string> = {
+      'ا': 'alef', 'ب': 'be', 'پ': 'pe', 'ت': 'te', 'ث': 'se', 'ج': 'jim', 'چ': 'che',
+      'ح': 'he', 'خ': 'khe', 'د': 'dal', 'ذ': 'zal', 'ر': 're', 'ز': 'ze', 'ژ': 'zhe',
+      'س': 'sin', 'ش': 'shin', 'ص': 'sad', 'ض': 'zad', 'ط': 'ta', 'ظ': 'za',
+      'ع': 'eyn', 'غ': 'gheyn', 'ف': 'fe', 'ق': 'qaf', 'ک': 'kaf', 'گ': 'gaf',
+      'ل': 'lam', 'م': 'mim', 'ن': 'nun', 'و': 'vav', 'ه': 'he', 'ی': 'ye', 'آ': 'alef'
+    };
+
+    const map = lang === 'fa' ? farsiMap : arabicMap;
+
+    if (!text) return '';
+
+    if (text.length === 1) {
+      return map[text] || text;
     } else {
-      // For words, transliterate each letter
-      return arabicText.split('').map(char => transliterationMap[char] || char).join('-');
+      return text.split('').map(char => map[char] || char).join('-');
     }
   };
 
@@ -108,13 +125,14 @@ const PhonicsApp: React.FC = () => {
   const getMaxZoom = () => {
     const baseMax = 8;
     const lengthFactor = wordLength === 1 ? 1 : wordLength === 2 ? 0.8 : wordLength === 3 ? 0.6 : 0.4;
-    const transliterationFactor = (language === 'ar' && showTransliteration) ? 0.7 : 1;
-    return baseMax * lengthFactor * transliterationFactor;
+    const transliterationFactor = ((language === 'ar' || language === 'fa') && showTransliteration) ? 0.7 : 1;
+    const mobileFactor = window.innerWidth <= 768 ? 0.6 : 1; // Smaller max zoom on mobile
+    return baseMax * lengthFactor * transliterationFactor * mobileFactor;
   };
 
-  const currentDisplayText = caseMode === 'uppercase' 
-    ? currentContent[currentIndex] 
-    : currentContent[currentIndex].toLowerCase();
+  const currentDisplayText = (language === 'en' && caseMode === 'lowercase') 
+    ? (currentContent[currentIndex] || '').toLowerCase()
+    : currentContent[currentIndex] || '';
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -131,7 +149,7 @@ const PhonicsApp: React.FC = () => {
   }, [currentIndex]);
 
   const handleShowImage = async () => {
-    if (!showImage) {
+    if (!showImage && currentContent[currentIndex]) {
       await searchImage(currentContent[currentIndex]);
     }
     setShowImage(!showImage);
@@ -139,11 +157,18 @@ const PhonicsApp: React.FC = () => {
 
   const handleLetterAreaClick = (side: 'left' | 'right' | 'center') => {
     if (side === 'center') {
-      if (language === 'ar') {
-        setShowTransliteration(!showTransliteration);
-      } else {
-        toggleCaseMode();
-      }
+      // Navigate to next letter/word on tap
+      const newIndex = (currentIndex + 1) % currentContent.length;
+      setCurrentIndex(newIndex);
+      playNavigationAudio();
+    }
+  };
+
+  const handleLetterLongPress = () => {
+    if (language === 'ar' || language === 'fa') {
+      setShowTransliteration(!showTransliteration);
+    } else {
+      toggleCaseMode();
     }
   };
 
@@ -202,16 +227,16 @@ const PhonicsApp: React.FC = () => {
     <div className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${
       isDarkMode 
         ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' 
-        : 'bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50'
+        : 'bg-gradient-to-br from-stone-50 via-amber-50 to-orange-50'
     } flex flex-col select-none overflow-hidden`}>
       
       {/* Header */}
       <div className={`px-4 py-3 border-b transition-colors ${
-        isDarkMode ? 'border-gray-700 bg-gray-800/90' : 'border-gray-200 bg-white/90'
+        isDarkMode ? 'border-gray-700 bg-gray-800/90' : 'border-stone-200 bg-stone-50/90'
       } backdrop-blur-sm flex-shrink-0 shadow-sm`}>
         <div className="flex justify-between items-center max-w-7xl mx-auto">
           <div>
-            <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+            <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>
               Simple Phonics
             </h1>
           </div>
@@ -234,7 +259,7 @@ const PhonicsApp: React.FC = () => {
               className={`p-2.5 rounded-lg transition-colors ${
                 isDarkMode 
                   ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
-                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
               }`}
               aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
@@ -266,11 +291,12 @@ const PhonicsApp: React.FC = () => {
             showImage={showImage}
             imageData={currentImageData}
             onLetterAreaClick={handleLetterAreaClick}
+            onLetterLongPress={handleLetterLongPress}
             isClickable={true}
             maxZoom={getMaxZoom()}
             language={language}
             showTransliteration={showTransliteration}
-            transliteration={language === 'ar' ? getArabicTransliteration(currentContent[currentIndex]) : ''}
+            transliteration={currentContent[currentIndex] ? getTransliteration(currentContent[currentIndex], language) : ''}
           />
         </div>
 
