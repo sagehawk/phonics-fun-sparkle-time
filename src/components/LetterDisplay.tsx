@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 
 interface LetterDisplayProps {
@@ -36,6 +35,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isLongPress, setIsLongPress] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTouchDistance = useRef<number | null>(null);
 
@@ -109,11 +109,13 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   }, [zoomLevel, onZoomChange, maxZoom]);
 
   const handleTouchStart = () => {
+    setIsLongPress(false);
     const timer = setTimeout(() => {
+      setIsLongPress(true);
       if (onLetterLongPress) {
         onLetterLongPress();
       }
-    }, 500); // 500ms for long press
+    }, 500);
     setLongPressTimer(timer);
   };
 
@@ -124,15 +126,20 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     }
     
     // Only trigger click if it wasn't a long press
-    if (onLetterAreaClick) {
+    if (!isLongPress && onLetterAreaClick) {
       e.preventDefault();
       e.stopPropagation();
       onLetterAreaClick('center');
     }
+    
+    // Reset long press state after a short delay
+    setTimeout(() => setIsLongPress(false), 100);
   };
 
   const handleMouseDown = () => {
+    setIsLongPress(false);
     const timer = setTimeout(() => {
+      setIsLongPress(true);
       if (onLetterLongPress) {
         onLetterLongPress();
       }
@@ -146,11 +153,15 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
       setLongPressTimer(null);
     }
     
-    if (onLetterAreaClick) {
+    // Only trigger click if it wasn't a long press
+    if (!isLongPress && onLetterAreaClick) {
       e.preventDefault();
       e.stopPropagation();
       onLetterAreaClick('center');
     }
+    
+    // Reset long press state after a short delay
+    setTimeout(() => setIsLongPress(false), 100);
   };
 
   const getFontFamily = () => {
@@ -195,101 +206,109 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         </div>
       )}
 
-      {/* Main scaling container */}
+      {/* Main scaling container - positioned higher */}
       <div 
         className="flex flex-col items-center justify-center"
         style={{
           transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
-          transformOrigin: 'center center'
+          transformOrigin: 'center center',
+          marginTop: window.innerWidth <= 768 ? '-15vh' : '-8vh' // Much higher positioning
         }}
       >
-        {/* Main letter/word display */}
-        <div 
-          data-letter-display
-          className={`
-            text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold
-            transition-all duration-300 ease-out
-            ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
-            ${isDarkMode ? 'text-white' : 'text-gray-800'}
-            tracking-wider
-            flex items-center justify-center
-            ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
-            select-none relative
-            touch-manipulation
-            letter-display-no-highlight
-          `}
-          style={{ 
-            fontFamily: getFontFamily(),
-            direction: getTextDirection(),
-            textShadow: isDarkMode 
-              ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
-              : '0 4px 20px rgba(0, 0, 0, 0.1)',
-            lineHeight: (language === 'ar' || language === 'fa') ? '1.2' : '0.8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '1em',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-            WebkitTouchCallout: 'none',
-            WebkitTapHighlightColor: 'transparent',
-            zIndex: 1,
-            // Better positioning for mobile
-            marginTop: window.innerWidth <= 768 ? '10vh' : '0'
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-        >
-          {text && text.length === 1 ? (
-            text
-          ) : text ? (
-            <div 
-              className="flex" 
-              style={{ 
-                direction: getTextDirection(), 
-                gap: (language === 'ar' || language === 'fa') ? '0' : '0.1em' // Connected letters for Arabic/Farsi
-              }}
-            >
-              {text.split('').map((char, index) => (
-                <span key={index} className="relative">
-                  {char}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        {/* Transliteration display - now properly positioned and scaled */}
-        {(language === 'ar' || language === 'fa') && showTransliteration && transliteration && (
+        {/* Wrapper for word and transliteration to scale together */}
+        <div className="flex flex-col items-center justify-center">
+          {/* Main letter/word display */}
           <div 
+            data-letter-display
             className={`
-              text-lg md:text-xl lg:text-2xl font-medium
-              ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}
-              text-center
+              text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold
+              transition-all duration-300 ease-out
+              ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
+              ${isDarkMode ? 'text-white' : 'text-gray-800'}
+              tracking-wider
+              flex items-center justify-center
+              ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
+              select-none relative
+              touch-manipulation
+              letter-display-no-highlight
             `}
-            style={{
-              fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
-              marginTop: '0.3em',
-              fontSize: '0.4em',
-              maxWidth: '100%',
-              overflow: 'hidden'
+            style={{ 
+              fontFamily: getFontFamily(),
+              direction: getTextDirection(),
+              textShadow: isDarkMode 
+                ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
+                : '0 4px 20px rgba(0, 0, 0, 0.1)',
+              lineHeight: (language === 'ar' || language === 'fa') ? '1.2' : '0.8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '1em',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+              WebkitTapHighlightColor: 'transparent',
+              zIndex: 1
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
           >
             {text && text.length === 1 ? (
-              transliteration
-            ) : transliterationParts.length > 0 ? (
-              <div className="flex justify-center gap-4" style={{ direction: 'rtl' }}>
-                {transliterationParts.map((part, index) => (
-                  <span key={index} className="text-center">
-                    {part || ''}
-                  </span>
-                ))}
-              </div>
+              text
+            ) : text ? (
+              // For multi-letter Arabic/Farsi words, display as connected text
+              (language === 'ar' || language === 'fa') ? (
+                <span className="arabic-connected">{text}</span>
+              ) : (
+                // For English, keep individual letters
+                <div 
+                  className="flex" 
+                  style={{ 
+                    direction: getTextDirection(), 
+                    gap: '0.1em'
+                  }}
+                >
+                  {text.split('').map((char, index) => (
+                    <span key={index} className="relative">
+                      {char}
+                    </span>
+                  ))}
+                </div>
+              )
             ) : null}
           </div>
-        )}
+
+          {/* Transliteration display - positioned relative to the word above */}
+          {(language === 'ar' || language === 'fa') && showTransliteration && transliteration && (
+            <div 
+              className={`
+                text-lg md:text-xl lg:text-2xl font-medium
+                ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}
+                text-center
+              `}
+              style={{
+                fontFamily: '"Nunito", system-ui, -apple-system, sans-serif',
+                marginTop: '0.3em',
+                fontSize: '0.4em', // Relative to parent font size
+                maxWidth: '100%',
+                overflow: 'hidden'
+              }}
+            >
+              {text && text.length === 1 ? (
+                transliteration
+              ) : transliterationParts.length > 0 ? (
+                <div className="flex justify-center gap-4" style={{ direction: 'rtl' }}>
+                  {transliterationParts.map((part, index) => (
+                    <span key={index} className="text-center">
+                      {part || ''}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Image hint */}

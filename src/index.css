@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Amiri:wght@400;700&family=Vazirmatn:wght@400;600;700&display=swap');
 
 @tailwind base;
@@ -238,8 +237,14 @@ button:focus-visible {
   text-rendering: optimizeLegibility;
 }
 
-/* Better Arabic text connection */
+/* Better Arabic text connection - enhanced for proper Arabic script rendering */
 .arabic-connected {
-  letter-spacing: -0.02em;
-  word-spacing: 0.1em;
+  letter-spacing: 0 !important; /* Remove any letter spacing for proper connection */
+  word-spacing: 0 !important;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" on, "calt" on, "kern" on, "curs" on; /* Enable cursive connection */
+  -webkit-font-feature-settings: "liga" on, "calt" on, "kern" on, "curs" on;
+  font-variant-ligatures: contextual common-ligatures;
+  direction: rtl;
+  unicode-bidi: bidi-override;
 }
