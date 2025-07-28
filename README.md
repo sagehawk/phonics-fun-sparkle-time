@@ -59,7 +59,7 @@ To run this project locally:
 
 2.  **Navigate to the project directory:**
     ```sh
-    cd your-repo-name
+    cd phonics-fun-sparkle-time
     ```
 
 3.  **Install dependencies:**
