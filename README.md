@@ -10,12 +10,8 @@ An interactive, multi-language web application designed to make learning phonics
 
 ---
 
-<!-- 
-  IMPORTANT: Add a high-quality GIF or screenshot of the app in action here!
-  A GIF showing the language switching, zooming, and confetti is highly recommended.
--->
 <p align="center">
-  <img src="https-link-to-your-screenshot-or-gif.gif" alt="Simple Phonics App Demo" width="800"/>
+  <img src="https://i.imgur.com/2CN8AHg.gif" alt="Simple Phonics App Demo" width="800"/>
 </p>
 
 ## ✨ Key Features
@@ -58,7 +54,7 @@ To run this project locally:
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/your-username/your-repo-name.git
+    git clone https://github.com/sagehawk/phonics-fun-sparkle-time.git
     ```
 
 2.  **Navigate to the project directory:**
