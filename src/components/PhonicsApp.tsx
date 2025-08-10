@@ -28,7 +28,7 @@ const PhonicsApp: React.FC = () => {
     getTransliteration,
   } = usePhonics();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const { findRhymeGroup, getNextRhyme } = useRhymes(language, wordLength);
+  const { findRhymeGroup, getNextRhyme, rhymeGroups } = useRhymes(language, wordLength);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -141,10 +141,36 @@ const PhonicsApp: React.FC = () => {
 
   const handleInteraction = (x: number, width: number) => {
     setShowImage(false);
-    if (x < width * PREVIOUS_ITEM_CLICK_AREA) {
-      setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
-    } else if (x > width * NEXT_ITEM_CLICK_AREA) {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
+    if (x < width * PREVIOUS_ITEM_CLICK_AREA || x > width * NEXT_ITEM_CLICK_AREA) {
+      if (rhymeGroups) {
+        const allRhymeGroups = Object.values(rhymeGroups);
+        if (allRhymeGroups.length === 0) return;
+
+        const currentGroup = allRhymeGroups.find(group => group.includes(currentDisplayText.toUpperCase()));
+        const currentGroupIndex = currentGroup ? allRhymeGroups.indexOf(currentGroup) : -1;
+
+        let nextRhymeGroupIndex;
+        if (x < width * PREVIOUS_ITEM_CLICK_AREA) {
+          nextRhymeGroupIndex = (currentGroupIndex - 1 + allRhymeGroups.length) % allRhymeGroups.length;
+        } else {
+          nextRhymeGroupIndex = (currentGroupIndex + 1) % allRhymeGroups.length;
+        }
+
+        const nextRhymeGroup = allRhymeGroups[nextRhymeGroupIndex];
+        const nextWord = nextRhymeGroup[0];
+        const nextIndex = content.findIndex(word => word.toUpperCase() === nextWord.toUpperCase());
+
+        if (nextIndex !== -1) {
+          setCurrentIndex(nextIndex);
+        }
+      } else {
+        // Fallback for no rhymes
+        if (x < width * PREVIOUS_ITEM_CLICK_AREA) {
+          setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
+        } else if (x > width * NEXT_ITEM_CLICK_AREA) {
+          setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
+        }
+      }
     }
   };
 
@@ -220,8 +246,7 @@ const PhonicsApp: React.FC = () => {
             onZoomChange={(level) => setZoomLevel(Math.min(level, getMaxZoom()))}
             showImage={showImage}
             imageData={currentImageData}
-            onLetterAreaClick={() => setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length)}
-            onFirstLetterClick={handleRhymeCycle}
+            onLetterAreaClick={handleRhymeCycle}
             onLetterLongPress={handleLetterLongPress}
             isClickable={true}
             maxZoom={getMaxZoom()}

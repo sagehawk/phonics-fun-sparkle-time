@@ -1,28 +1,28 @@
 export const letterColors: { [key: string]: string } = {
-  A: '#FF5733', // Red
-  B: '#33FF57', // Green
-  C: '#3357FF', // Blue
-  D: '#FF33A1', // Pink
-  E: '#A133FF', // Purple
-  F: '#33FFF3', // Cyan
-  G: '#F3FF33', // Yellow
-  H: '#FF8C33', // Orange
-  I: '#8C33FF', // Indigo
-  J: '#33FF8C', // Lime
-  K: '#FF338C', // Magenta
-  L: '#8CFF33', // Light Green
-  M: '#33A1FF', // Light Blue
-  N: '#FF5733', // Red
-  O: '#33FF57', // Green
-  P: '#3357FF', // Blue
-  Q: '#FF33A1', // Pink
-  R: '#A133FF', // Purple
-  S: '#33FFF3', // Cyan
-  T: '#F3FF33', // Yellow
-  U: '#FF8C33', // Orange
-  V: '#8C33FF', // Indigo
-  W: '#33FF8C', // Lime
-  X: '#FF338C', // Magenta
-  Y: '#8CFF33', // Light Green
-  Z: '#33A1FF', // Light Blue
+  A: '#FF8C66',
+  B: '#FFAD66',
+  C: '#FFD166',
+  D: '#FFFF66',
+  E: '#D1FF66',
+  F: '#A6FF66',
+  G: '#66FF8C',
+  H: '#66FFAD',
+  I: '#66FFD1',
+  J: '#66FFFF',
+  K: '#66D1FF',
+  L: '#66ADFF',
+  M: '#668CFF',
+  N: '#8C66FF',
+  O: '#AD66FF',
+  P: '#D166FF',
+  Q: '#FF66FF',
+  R: '#FF66D1',
+  S: '#FF66AD',
+  T: '#FF668C',
+  U: '#FF6666',
+  V: '#FF8C66',
+  W: '#FFAD66',
+  X: '#FFD166',
+  Y: '#FFFF66',
+  Z: '#D1FF66',
 };

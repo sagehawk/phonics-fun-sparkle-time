@@ -11,11 +11,10 @@ export const useRhymes = (language: string, wordLength: number) => {
   const [rhymeGroup, setRhymeGroup] = useState<string[]>([]);
   const [rhymeIndex, setRhymeIndex] = useState(0);
 
-  const findRhymeGroup = useCallback((word: string) => {
-    const rhymesForLanguage = rhymeData[language];
-    if (!rhymesForLanguage) return;
+  const rhymesForLanguage = rhymeData[language];
+  const rhymesForLength = rhymesForLanguage ? rhymesForLanguage[wordLength] : undefined;
 
-    const rhymesForLength = rhymesForLanguage[wordLength];
+  const findRhymeGroup = useCallback((word: string) => {
     if (!rhymesForLength) return;
 
     for (const key in rhymesForLength) {
@@ -34,5 +33,5 @@ export const useRhymes = (language: string, wordLength: number) => {
     return rhymeGroup[nextIndex];
   }, [rhymeGroup, rhymeIndex]);
 
-  return { findRhymeGroup, getNextRhyme };
+  return { findRhymeGroup, getNextRhyme, rhymeGroups: rhymesForLength };
 };

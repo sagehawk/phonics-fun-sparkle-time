@@ -10,7 +10,6 @@ interface LetterDisplayProps {
   showImage: boolean;
   imageData: { url: string; searchTerm: string } | null;
   onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
-  onFirstLetterClick?: () => void;
   onLetterLongPress?: () => void;
   isClickable?: boolean;
   maxZoom?: number;
@@ -27,7 +26,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   showImage, 
   imageData,
   onLetterAreaClick,
-  onFirstLetterClick,
   onLetterLongPress,
   isClickable = false,
   maxZoom = 8,
@@ -276,13 +274,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
                     <span
                       key={index}
                       className="relative"
-                      style={{ color: index === 0 ? letterColors[char.toUpperCase()] : 'inherit', cursor: index === 0 ? 'pointer' : 'default' }}
-                      onClick={(e) => {
-                        if (index === 0 && onFirstLetterClick) {
-                          e.stopPropagation();
-                          onFirstLetterClick();
-                        }
-                      }}
+                      style={{ color: index === 0 ? letterColors[char.toUpperCase()] : 'inherit' }}
                     >
                       {char}
                     </span>
