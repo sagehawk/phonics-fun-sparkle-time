@@ -1,0 +1,8 @@
+{
+  "letters": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  "words": {
+    "2": ["AT", "BE", "GO", "HE", "IF", "IN", "IS", "IT", "MY", "NO", "OF", "ON", "OR", "SO", "TO", "UP", "WE"],
+    "3": ["AND", "ARE", "BUT", "CAN", "CAR", "CAT", "DOG", "EAT", "FOR", "GET", "GOT", "HAD", "HAS", "HER", "HIM", "HIS", "HOW", "ITS", "LET", "MAY", "NEW", "NOT", "NOW", "OLD", "ONE", "OUR", "OUT", "PUT", "RUN", "SAY", "SHE", "THE", "TOO", "TWO", "USE", "WAS", "WAY", "WHO", "WIN", "YES", "YET", "YOU"],
+    "4": ["BACK", "BEEN", "CALL", "CAME", "COME", "EACH", "FIND", "GIVE", "GOOD", "HAVE", "HERE", "JUST", "KNOW", "LAST", "LEFT", "LIFE", "LIKE", "LIVE", "LOOK", "MADE", "MAKE", "MANY", "MORE", "MOST", "MOVE", "MUCH", "NAME", "NEED", "NEXT", "ONLY", "OVER", "PART", "PLAY", "RIGHT", "SAID", "SAME", "SEEM", "SHOW", "SOME", "TAKE", "TELL", "THAN", "THAT", "THEM", "THEY", "THIS", "TIME", "VERY", "WANT", "WELL", "WENT", "WERE", "WHAT", "WHEN", "WILL", "WITH", "WORD", "WORK", "YEAR", "YOUR"]
+  }
+}

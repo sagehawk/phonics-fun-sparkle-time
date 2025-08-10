@@ -1,13 +1,14 @@
 
 import React from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface WordLengthSliderProps {
   value: number;
   onChange: (value: number) => void;
-  isDarkMode: boolean;
 }
 
-const WordLengthSlider: React.FC<WordLengthSliderProps> = ({ value, onChange, isDarkMode }) => {
+const WordLengthSlider: React.FC<WordLengthSliderProps> = ({ value, onChange }) => {
+  const { isDarkMode } = useTheme();
   return (
     <div className="flex items-center gap-2">
       {[1, 2, 3, 4].map((level) => (

@@ -1,13 +1,14 @@
 
 import React from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface LanguageSelectorProps {
   value: string;
   onChange: (language: string) => void;
-  isDarkMode: boolean;
 }
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ value, onChange, isDarkMode }) => {
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({ value, onChange }) => {
+  const { isDarkMode } = useTheme();
   const languages = [
     { code: 'en', flag: '🇺🇸', name: 'English' },
     { code: 'ar', flag: '🇸🇦', name: 'العربية' },

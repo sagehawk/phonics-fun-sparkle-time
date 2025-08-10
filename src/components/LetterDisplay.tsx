@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface LetterDisplayProps {
   text: string;
-  isDarkMode: boolean;
   showConfetti: boolean;
   zoomLevel: number;
   onZoomChange: (level: number) => void;
@@ -19,7 +19,6 @@ interface LetterDisplayProps {
 
 const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
   text, 
-  isDarkMode, 
   showConfetti, 
   zoomLevel, 
   onZoomChange, 
@@ -33,6 +32,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   showTransliteration = false,
   transliteration = ''
 }) => {
+  const { isDarkMode } = useTheme();
   const [isAnimating, setIsAnimating] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isLongPress, setIsLongPress] = useState(false);
