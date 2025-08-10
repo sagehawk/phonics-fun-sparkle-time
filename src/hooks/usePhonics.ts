@@ -8,6 +8,7 @@ type LanguageData = {
   letters: string[] | string;
   words: Record<string, string[]>;
   transliteration?: Record<string, string>;
+  rhymes?: Record<string, Record<string, string[]>>;
 };
 
 const languageData: Record<string, LanguageData> = {

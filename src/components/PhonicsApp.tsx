@@ -6,6 +6,7 @@ import LanguageSelector from './LanguageSelector';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { useImageAPI } from '../hooks/useImageAPI';
 import { usePhonics } from '../hooks/usePhonics';
+import { useRhymes } from '../hooks/useRhymes';
 import { useTheme } from '../contexts/ThemeContext';
 import { audioData } from '../data/audio';
 
@@ -27,6 +28,7 @@ const PhonicsApp: React.FC = () => {
     getTransliteration,
   } = usePhonics();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { findRhymeGroup, getNextRhyme } = useRhymes(language, wordLength);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -91,6 +93,22 @@ const PhonicsApp: React.FC = () => {
   const currentDisplayText = (language === 'en' && caseMode === 'lowercase')
     ? (content[currentIndex] || '').toLowerCase()
     : content[currentIndex] || '';
+
+  useEffect(() => {
+    if (currentDisplayText) {
+      findRhymeGroup(currentDisplayText);
+    }
+  }, [currentDisplayText, findRhymeGroup]);
+
+  const handleRhymeCycle = () => {
+    const nextRhyme = getNextRhyme();
+    if (nextRhyme) {
+      const nextIndex = content.indexOf(nextRhyme);
+      if (nextIndex !== -1) {
+        setCurrentIndex(nextIndex);
+      }
+    }
+  };
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -203,6 +221,7 @@ const PhonicsApp: React.FC = () => {
             showImage={showImage}
             imageData={currentImageData}
             onLetterAreaClick={() => setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length)}
+            onFirstLetterClick={handleRhymeCycle}
             onLetterLongPress={handleLetterLongPress}
             isClickable={true}
             maxZoom={getMaxZoom()}

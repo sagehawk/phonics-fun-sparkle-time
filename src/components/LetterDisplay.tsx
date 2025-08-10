@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { letterColors } from '../lib/colors';
 
 interface LetterDisplayProps {
   text: string;
@@ -9,6 +10,7 @@ interface LetterDisplayProps {
   showImage: boolean;
   imageData: { url: string; searchTerm: string } | null;
   onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
+  onFirstLetterClick?: () => void;
   onLetterLongPress?: () => void;
   isClickable?: boolean;
   maxZoom?: number;
@@ -25,6 +27,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   showImage, 
   imageData,
   onLetterAreaClick,
+  onFirstLetterClick,
   onLetterLongPress,
   isClickable = false,
   maxZoom = 8,
@@ -255,7 +258,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             onMouseUp={handleMouseUp}
           >
             {text && text.length === 1 ? (
-              text
+              <span style={{ color: letterColors[text.toUpperCase()] }}>{text}</span>
             ) : text ? (
               // For multi-letter Arabic/Farsi words, display as connected text
               (language === 'ar' || language === 'fa') ? (
@@ -270,7 +273,17 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
                   }}
                 >
                   {text.split('').map((char, index) => (
-                    <span key={index} className="relative">
+                    <span
+                      key={index}
+                      className="relative"
+                      style={{ color: index === 0 ? letterColors[char.toUpperCase()] : 'inherit', cursor: index === 0 ? 'pointer' : 'default' }}
+                      onClick={(e) => {
+                        if (index === 0 && onFirstLetterClick) {
+                          e.stopPropagation();
+                          onFirstLetterClick();
+                        }
+                      }}
+                    >
                       {char}
                     </span>
                   ))}
