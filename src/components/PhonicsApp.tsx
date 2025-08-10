@@ -9,6 +9,7 @@ import { usePhonics } from '../hooks/usePhonics';
 import { useRhymes } from '../hooks/useRhymes';
 import { useTheme } from '../contexts/ThemeContext';
 import { audioData } from '../data/audio';
+import Instructions from './Instructions';
 
 // Constants for magic numbers
 const PREVIOUS_ITEM_CLICK_AREA = 0.4;
@@ -139,18 +140,27 @@ const PhonicsApp: React.FC = () => {
     }
   };
 
-  const handleInteraction = (x: number, width: number) => {
+  const handleInteraction = (e: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>) => {
+    // Check if the click is on the LetterDisplay component or any of its children. If so, do nothing.
+    if ((e.target as HTMLElement).closest('[data-letter-display]')) {
+      return;
+    }
+
     setShowImage(false);
-    if (x < width * PREVIOUS_ITEM_CLICK_AREA || x > width * NEXT_ITEM_CLICK_AREA) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
+    const clickX = x - rect.left;
+
+    if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA || clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
       if (rhymeGroups) {
         const allRhymeGroups = Object.values(rhymeGroups);
         if (allRhymeGroups.length === 0) return;
 
-        const currentGroup = allRhymeGroups.find(group => group.includes(currentDisplayText.toUpperCase()));
+        const currentGroup = allRhymeGroups.find(group => group.includes(content[currentIndex].toUpperCase()));
         const currentGroupIndex = currentGroup ? allRhymeGroups.indexOf(currentGroup) : -1;
 
         let nextRhymeGroupIndex;
-        if (x < width * PREVIOUS_ITEM_CLICK_AREA) {
+        if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
           nextRhymeGroupIndex = (currentGroupIndex - 1 + allRhymeGroups.length) % allRhymeGroups.length;
         } else {
           nextRhymeGroupIndex = (currentGroupIndex + 1) % allRhymeGroups.length;
@@ -165,9 +175,9 @@ const PhonicsApp: React.FC = () => {
         }
       } else {
         // Fallback for no rhymes
-        if (x < width * PREVIOUS_ITEM_CLICK_AREA) {
+        if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
           setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
-        } else if (x > width * NEXT_ITEM_CLICK_AREA) {
+        } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
           setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
         }
       }
@@ -226,37 +236,27 @@ const PhonicsApp: React.FC = () => {
           paddingBottom: '2vh',
           minHeight: 'calc(100vh - 120px)'
         }}
+        onClick={handleInteraction}
+        onTouchEnd={handleInteraction}
       >
-        <button
-            className="w-full h-full flex items-center justify-center"
-            onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                handleInteraction(e.clientX - rect.left, rect.width);
-            }}
-            onTouchEnd={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                handleInteraction(e.changedTouches[0].clientX - rect.left, rect.width);
-            }}
-            aria-label="Main content area"
-        >
-          <LetterDisplay
-            text={currentDisplayText}
-            showConfetti={showConfetti}
-            zoomLevel={zoomLevel}
-            onZoomChange={(level) => setZoomLevel(Math.min(level, getMaxZoom()))}
-            showImage={showImage}
-            imageData={currentImageData}
-            onLetterAreaClick={handleRhymeCycle}
-            onLetterLongPress={handleLetterLongPress}
-            isClickable={true}
-            maxZoom={getMaxZoom()}
-            language={language}
-            showTransliteration={showTransliteration}
-            transliteration={content[currentIndex] ? getTransliteration(content[currentIndex]) : ''}
-          />
-        </button>
+        <LetterDisplay
+          text={currentDisplayText}
+          showConfetti={showConfetti}
+          zoomLevel={zoomLevel}
+          onZoomChange={(level) => setZoomLevel(Math.min(level, getMaxZoom()))}
+          showImage={showImage}
+          imageData={currentImageData}
+          onLetterAreaClick={handleRhymeCycle}
+          onLetterLongPress={handleLetterLongPress}
+          isClickable={true}
+          maxZoom={getMaxZoom()}
+          language={language}
+          showTransliteration={showTransliteration}
+          transliteration={content[currentIndex] ? getTransliteration(content[currentIndex]) : ''}
+        />
 
         <audio ref={audioRef} src={audioData} />
+        <Instructions />
       </main>
     </div>
   );

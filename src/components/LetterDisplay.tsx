@@ -9,7 +9,7 @@ interface LetterDisplayProps {
   onZoomChange: (level: number) => void;
   showImage: boolean;
   imageData: { url: string; searchTerm: string } | null;
-  onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
+  onLetterAreaClick?: () => void;
   onLetterLongPress?: () => void;
   isClickable?: boolean;
   maxZoom?: number;
@@ -130,7 +130,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     if (!isLongPress && onLetterAreaClick) {
       e.preventDefault();
       e.stopPropagation();
-      onLetterAreaClick('center');
+      onLetterAreaClick();
     }
     
     // Reset long press state after a short delay
@@ -158,7 +158,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     if (!isLongPress && onLetterAreaClick) {
       e.preventDefault();
       e.stopPropagation();
-      onLetterAreaClick('center');
+      onLetterAreaClick();
     }
     
     // Reset long press state after a short delay
@@ -213,7 +213,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         style={{
           transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
           transformOrigin: 'center center',
-          marginTop: window.innerWidth <= 768 ? '-15vh' : '-8vh' // Much higher positioning
+          marginTop: window.innerWidth <= 768 ? '-10vh' : '-8vh'
         }}
       >
         {/* Wrapper for word and transliteration to scale together */}
