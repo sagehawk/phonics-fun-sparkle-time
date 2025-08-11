@@ -227,7 +227,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
               ${isDarkMode ? 'text-white' : 'text-gray-800'}
               tracking-wider
-              flex items-center justify-end
+              flex items-center justify-center
               ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
               select-none relative
               touch-manipulation
@@ -242,8 +242,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               lineHeight: (language === 'ar' || language === 'fa') ? '1.2' : '0.8',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-end',
-              minWidth: '10em',
+              justifyContent: 'center',
               minHeight: '1em',
               userSelect: 'none',
               WebkitUserSelect: 'none',
@@ -265,7 +264,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               ) : (
                 // For English, keep individual letters
                 <div
-                  className="flex items-baseline"
+                  className="flex items-baseline justify-center"
                   style={{
                     direction: getTextDirection(),
                     gap: '0.1em',
