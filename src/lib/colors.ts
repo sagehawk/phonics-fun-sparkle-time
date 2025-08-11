@@ -1,28 +1,28 @@
 export const letterColors: { [key: string]: string } = {
-  A: '#d14f4f',
-  B: '#d18b3f',
-  C: '#d1c44f',
-  D: '#a3d14f',
-  E: '#4fd16e',
-  F: '#4fd1a3',
-  G: '#4f9ad1',
-  H: '#4f4fd1',
-  I: '#9a4fd1',
-  J: '#d14f9a',
-  K: '#d13f3f',
-  L: '#d18b3f',
-  M: '#d1c43f',
-  N: '#8bd13f',
-  O: '#3fd18b',
-  P: '#3fcad1',
-  Q: '#3f8bd1',
-  R: '#3f3fd1',
-  S: '#8b3fd1',
-  T: '#d13fca',
-  U: '#d13f8b',
-  V: '#d13f3f',
-  W: '#d18b3f',
-  X: '#d1c43f',
-  Y: '#8bd13f',
-  Z: '#3fd18b'
+  A: '#ff8a80', // light red
+  B: '#ffb347', // light orange
+  C: '#ffd700', // gold
+  D: '#adff2f', // green yellow
+  E: '#98fb98', // pale green
+  F: '#afeeee', // paleturquoise
+  G: '#add8e6', // lightblue
+  H: '#b0c4de', // lightsteelblue
+  I: '#ccccff', // lavender
+  J: '#e6e6fa', // lavender
+  K: '#ffb6c1', // lightpink
+  L: '#f08080', // lightcoral
+  M: '#ffc0cb', // pink
+  N: '#ffa07a', // lightsalmon
+  O: '#ffdab9', // peachpuff
+  P: '#eee8aa', // palegoldenrod
+  Q: '#98fb98', // palegreen
+  R: '#afeeee', // paleturquoise
+  S: '#add8e6', // lightblue
+  T: '#b0c4de', // lightsteelblue
+  U: '#d8bfd8', // thistle
+  V: '#dda0dd', // plum
+  W: '#ee82ee', // violet
+  X: '#da70d6', // orchid
+  Y: '#ba55d3', // mediumorchid
+  Z: '#9932cc', // darkorchid
 };
