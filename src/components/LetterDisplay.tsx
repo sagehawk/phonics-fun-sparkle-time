@@ -264,10 +264,10 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               ) : (
                 // For English, keep individual letters
                 <div
-                  className="flex items-baseline justify-center"
+                  className="flex items-baseline"
                   style={{
                     direction: getTextDirection(),
-                    gap: '0.1em',
+                    gap: '0.1em'
                   }}
                 >
                   <span

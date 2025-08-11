@@ -1,15 +1,17 @@
-
 import { useState, useEffect, useCallback } from 'react';
 
 export const useKeyboardControls = (
-  currentContent: string[],
+  words: string[],
   currentIndex: number,
   setCurrentIndex: (index: number) => void,
   wordLength: number,
-  onContentChange: () => void,
-  onConfetti: () => void
+  setWordLength: (length: number) => void,
+  onNewWord: () => void,
+  onConfetti: () => void,
+  findRhymeGroup: (word: string) => void,
+  getNextRhyme: () => string | undefined,
 ) => {
-  const [caseMode, setCaseMode] = useState<'lowercase' | 'uppercase'>('uppercase'); // Start with uppercase
+  const [caseMode, setCaseMode] = useState<'uppercase' | 'lowercase'>('uppercase'); // Start with uppercase
 
   const toggleCaseMode = useCallback(() => {
     setCaseMode(prev => prev === 'lowercase' ? 'uppercase' : 'lowercase');
@@ -18,6 +20,12 @@ export const useKeyboardControls = (
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toLowerCase();
+
+    // Handle number keys to change word length
+    if (['1', '2', '3', '4'].includes(key)) {
+      setWordLength(Number(key));
+      return;
+    }
 
     // Handle Enter key for confetti
     if (key === 'enter') {
@@ -36,17 +44,29 @@ export const useKeyboardControls = (
     // Arrow key navigation
     if (key === 'arrowright') {
       event.preventDefault();
-      const newIndex = (currentIndex + 1) % currentContent.length;
+      const newIndex = (currentIndex + 1) % words.length;
       setCurrentIndex(newIndex);
-      onContentChange();
+      onNewWord();
       return;
     }
 
     if (key === 'arrowleft') {
       event.preventDefault();
-      const newIndex = (currentIndex - 1 + currentContent.length) % currentContent.length;
+      const newIndex = (currentIndex - 1 + words.length) % words.length;
       setCurrentIndex(newIndex);
-      onContentChange();
+      onNewWord();
+      return;
+    }
+
+    if (key === 'arrowup' || key === 'arrowdown') {
+      event.preventDefault();
+      const nextRhyme = getNextRhyme();
+      if (nextRhyme) {
+        const nextIndex = words.indexOf(nextRhyme);
+        if (nextIndex !== -1) {
+          setCurrentIndex(nextIndex);
+        }
+      }
       return;
     }
 
@@ -59,9 +79,9 @@ export const useKeyboardControls = (
     const letterIndex = key.charCodeAt(0) - 97; // 'a' = 97
     if (letterIndex !== currentIndex) {
       setCurrentIndex(letterIndex);
-      onContentChange();
+      onNewWord();
     }
-  }, [currentContent.length, currentIndex, setCurrentIndex, wordLength, onContentChange, toggleCaseMode, onConfetti]);
+  }, [words, currentIndex, setCurrentIndex, wordLength, setWordLength, onNewWord, toggleCaseMode, onConfetti, findRhymeGroup, getNextRhyme]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
