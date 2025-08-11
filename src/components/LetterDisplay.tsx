@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { letterColors } from '../lib/colors';
 
 interface LetterDisplayProps {
   text: string;
@@ -8,7 +9,7 @@ interface LetterDisplayProps {
   onZoomChange: (level: number) => void;
   showImage: boolean;
   imageData: { url: string; searchTerm: string } | null;
-  onLetterAreaClick?: (side: 'left' | 'right' | 'center') => void;
+  onLetterAreaClick?: () => void;
   onLetterLongPress?: () => void;
   isClickable?: boolean;
   maxZoom?: number;
@@ -129,7 +130,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     if (!isLongPress && onLetterAreaClick) {
       e.preventDefault();
       e.stopPropagation();
-      onLetterAreaClick('center');
+      onLetterAreaClick();
     }
     
     // Reset long press state after a short delay
@@ -157,7 +158,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     if (!isLongPress && onLetterAreaClick) {
       e.preventDefault();
       e.stopPropagation();
-      onLetterAreaClick('center');
+      onLetterAreaClick();
     }
     
     // Reset long press state after a short delay
@@ -212,7 +213,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
         style={{
           transform: `scale(${Math.min(zoomLevel, maxZoom)})`,
           transformOrigin: 'center center',
-          marginTop: window.innerWidth <= 768 ? '-15vh' : '-8vh' // Much higher positioning
+          marginTop: window.innerWidth <= 768 ? '-10vh' : '-8vh'
         }}
       >
         {/* Wrapper for word and transliteration to scale together */}
@@ -255,7 +256,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             onMouseUp={handleMouseUp}
           >
             {text && text.length === 1 ? (
-              text
+              <span style={{ color: letterColors[text.toUpperCase()] }}>{text}</span>
             ) : text ? (
               // For multi-letter Arabic/Farsi words, display as connected text
               (language === 'ar' || language === 'fa') ? (
@@ -270,7 +271,11 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
                   }}
                 >
                   {text.split('').map((char, index) => (
-                    <span key={index} className="relative">
+                    <span
+                      key={index}
+                      className="relative"
+                      style={{ color: index === 0 ? letterColors[char.toUpperCase()] : 'inherit' }}
+                    >
                       {char}
                     </span>
                   ))}

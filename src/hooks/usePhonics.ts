@@ -8,6 +8,7 @@ type LanguageData = {
   letters: string[] | string;
   words: Record<string, string[]>;
   transliteration?: Record<string, string>;
+  rhymes?: Record<string, Record<string, string[]>>;
 };
 
 const languageData: Record<string, LanguageData> = {
@@ -25,9 +26,17 @@ export const usePhonics = () => {
   useEffect(() => {
     const data = languageData[language];
     if (data) {
-      const newContent = wordLength === 1
-        ? Array.isArray(data.letters) ? data.letters : data.letters.split('')
-        : data.words[wordLength] || [];
+      let newContent: string[] = [];
+      if (wordLength === 1) {
+        newContent = Array.isArray(data.letters) ? data.letters : data.letters.split('');
+      } else {
+        const rhymesForLength = data.rhymes?.[wordLength];
+        if (rhymesForLength) {
+          newContent = Object.values(rhymesForLength).flat();
+        } else {
+          newContent = data.words[wordLength] || [];
+        }
+      }
       setContent(newContent);
       setTransliterationMap(data.transliteration);
     }
