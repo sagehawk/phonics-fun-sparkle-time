@@ -227,7 +227,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
               ${isDarkMode ? 'text-white' : 'text-gray-800'}
               tracking-wider
-              flex items-center justify-center
+              flex items-center justify-end
               ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
               select-none relative
               touch-manipulation
@@ -242,7 +242,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               lineHeight: (language === 'ar' || language === 'fa') ? '1.2' : '0.8',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'flex-end',
+              minWidth: '10em',
               minHeight: '1em',
               userSelect: 'none',
               WebkitUserSelect: 'none',
@@ -263,22 +264,20 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
                 <span className="arabic-connected">{text}</span>
               ) : (
                 // For English, keep individual letters
-                <div 
-                  className="flex" 
-                  style={{ 
-                    direction: getTextDirection(), 
-                    gap: '0.1em'
+                <div
+                  className="flex items-baseline"
+                  style={{
+                    direction: getTextDirection(),
+                    gap: '0.1em',
                   }}
                 >
-                  {text.split('').map((char, index) => (
-                    <span
-                      key={index}
-                      className="relative"
-                      style={{ color: index === 0 ? letterColors[char.toUpperCase()] : 'inherit' }}
-                    >
-                      {char}
-                    </span>
-                  ))}
+                  <span
+                    className="inline-block w-[1.2em] text-right"
+                    style={{ color: letterColors[text.charAt(0).toUpperCase()] }}
+                  >
+                    {text.charAt(0)}
+                  </span>
+                  <span>{text.substring(1)}</span>
                 </div>
               )
             ) : null}
