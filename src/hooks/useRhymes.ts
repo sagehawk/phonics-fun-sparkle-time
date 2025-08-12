@@ -15,16 +15,17 @@ export const useRhymes = (language: string, wordLength: number) => {
   const rhymesForLength = rhymesForLanguage ? rhymesForLanguage[wordLength] : undefined;
 
   const findRhymeGroup = useCallback((word: string) => {
-    if (!rhymesForLength) return;
+    if (!rhymesForLength || !word) return;
+    const upperWord = word.toUpperCase();
 
     for (const key in rhymesForLength) {
-      if (rhymesForLength[key].includes(word)) {
+      if (rhymesForLength[key].includes(upperWord)) {
         setRhymeGroup(rhymesForLength[key]);
-        setRhymeIndex(rhymesForLength[key].indexOf(word));
+        setRhymeIndex(rhymesForLength[key].indexOf(upperWord));
         return;
       }
     }
-  }, [language, wordLength]);
+  }, [rhymesForLength, wordLength]);
 
   const getNextRhyme = useCallback(() => {
     if (rhymeGroup.length === 0) return null;

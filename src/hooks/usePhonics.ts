@@ -28,13 +28,14 @@ export const usePhonics = () => {
     if (data) {
       let newContent: string[] = [];
       if (wordLength === 1) {
-        newContent = Array.isArray(data.letters) ? data.letters : data.letters.split('');
+        const letters = data.letters || [];
+        newContent = Array.isArray(letters) ? letters : letters.split('');
       } else {
         const rhymesForLength = data.rhymes?.[wordLength];
         if (rhymesForLength) {
           newContent = Object.values(rhymesForLength).flat();
         } else {
-          newContent = data.words[wordLength] || [];
+          newContent = data.words?.[wordLength] || [];
         }
       }
       setContent(newContent);
