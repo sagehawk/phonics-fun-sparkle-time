@@ -34,5 +34,5 @@ export const letterColors: { [key: string]: string } = {
   '7': '#4f9ad1', // Light Blue
   '8': '#4f4fd1', // Blue
   '9': '#9a4fd1', // Purple
-  '0': '#d14f9a' // Pink (for 0, if needed, though user asked for 1-9)
+  '0': '#d14f9a' // Pink
 };
