@@ -218,7 +218,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           <div 
             data-letter-display
             className={`
-              text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold
+              text-7xl md:text-9xl lg:text-9xl xl:text-9xl font-bold
               transition-all duration-300 ease-out
               ${isDarkMode ? 'text-white' : 'text-gray-800'}
               tracking-wider
@@ -259,20 +259,18 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               ) : (
                 // For English, keep individual letters
                 <div
-                  className="flex justify-center"
+                  className="flex justify-center items-center"
                   style={{
                     direction: getTextDirection(),
                     gap: '0.1em'
                   }}
                 >
-                  <div className="w-40 text-right">
-                    <span
-                      className="relative"
-                      style={{ color: letterColors[text.charAt(0).toUpperCase()] }}
-                    >
-                      {text.charAt(0)}
-                    </span>
-                  </div>
+                  <span
+                    className="relative"
+                    style={{ color: letterColors[text.charAt(0).toUpperCase()] }}
+                  >
+                    {text.charAt(0)}
+                  </span>
                   <span>{text.substring(1)}</span>
                 </div>
               )

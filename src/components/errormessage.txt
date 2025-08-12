@@ -1,0 +1,15 @@
+[plugin:vite:react-swc] × Unexpected token `div`. Expected jsx identifier
+     ╭─[C:/Users/secte/OneDrive/Documents/GitHub/phonics-fun-sparkle-time/src/components/LetterDisplay.tsx:193:1]
+ 190 │   const transliterationParts = getTransliterationParts();
+ 191 │ 
+ 192 │   return (
+ 193 │     <div ref={containerRef} className="relative flex items-center justify-center w-full h-full touch-none">
+     ·      ───
+ 194 │       {/* Confetti animation */}
+ 195 │       {showConfetti && (
+ 196 │         <div className="absolute inset-0 pointer-events-none flex items-center justify-center" style={{ zIndex: -1 }}>
+     ╰────
+
+
+Caused by:
+    Syntax Error

@@ -60,15 +60,37 @@ export const useKeyboardControls = (
       }
     }
 
-    if (wordLength === 2) { // Explicitly handle 2-letter words
-      if (key === 'arrowright' || key === 'arrowleft' || key === 'arrowup' || key === 'arrowdown') {
+    if (wordLength === 2) {
+      if (key === 'arrowright' || key === 'arrowleft') {
         event.preventDefault();
         if (words.length > 0) {
-          const newIndex = (key === 'arrowright' || key === 'arrowdown')
+          const newIndex = (key === 'arrowright')
             ? (currentIndex + 1) % words.length
             : (currentIndex - 1 + words.length) % words.length;
           setCurrentIndex(newIndex);
           onNewWord();
+        }
+        return;
+      }
+      if (key === 'arrowup' || key === 'arrowdown') {
+        event.preventDefault();
+        if (words.length > 0) {
+          const currentWord = words[currentIndex];
+          const firstLetter = currentWord[0];
+          const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+          const firstLetterIndex = alphabet.indexOf(firstLetter.toLowerCase());
+          if (firstLetterIndex !== -1) {
+            const nextFirstLetterIndex = (key === 'arrowdown')
+              ? (firstLetterIndex + 1) % alphabet.length
+              : (firstLetterIndex - 1 + alphabet.length) % alphabet.length;
+            const nextFirstLetter = alphabet[nextFirstLetterIndex];
+            const newWord = (caseMode === 'uppercase' ? nextFirstLetter.toUpperCase() : nextFirstLetter) + currentWord.slice(1);
+            const newIndex = words.indexOf(newWord);
+            if (newIndex !== -1) {
+              setCurrentIndex(newIndex);
+              onNewWord();
+            }
+          }
         }
         return;
       }

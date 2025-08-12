@@ -133,7 +133,13 @@ const PhonicsApp: React.FC = () => { // Force reload
     const x = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
     const clickX = x - rect.left;
 
-    if (wordLength === 2) { // Explicitly handle 2-letter words
+    if (wordLength === 0 || wordLength === 1) {
+      if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
+      } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
+      }
+    } else if (wordLength === 2) { // Explicitly handle 2-letter words
       if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
         setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
       } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
