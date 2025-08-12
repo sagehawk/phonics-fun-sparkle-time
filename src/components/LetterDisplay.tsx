@@ -218,7 +218,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           <div 
             data-letter-display
             className={`
-              text-7xl md:text-9xl lg:text-9xl xl:text-9xl font-bold
+              text-8xl md:text-9xl lg:text-9xl xl:text-9xl font-bold
               transition-all duration-300 ease-out
               ${isDarkMode ? 'text-white' : 'text-gray-800'}
               tracking-wider

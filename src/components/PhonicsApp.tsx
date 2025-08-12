@@ -170,13 +170,13 @@ const PhonicsApp: React.FC = () => {
 
   // --- Render JSX ---
   return (
-    <div className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' : 'bg-gradient-to-br from-stone-50 via-amber-50 to-orange-50'} flex flex-col select-none overflow-hidden`}>
-      <header className={`px-4 py-3 border-b transition-colors ${isDarkMode ? 'border-gray-700 bg-gray-800/90' : 'border-stone-200 bg-stone-50/90'} backdrop-blur-sm flex-shrink-0 shadow-sm`}>
+    <div className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' : 'bg-slate-100'} flex flex-col select-none overflow-hidden`}>
+      <header className={`px-4 py-3 border-b transition-colors ${isDarkMode ? 'border-gray-700 bg-gray-800/90' : 'border-slate-200 bg-slate-50/90'} backdrop-blur-sm flex-shrink-0 shadow-sm`}>
         <div className="flex justify-between items-center max-w-7xl mx-auto">
-          <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-stone-800'}`}>Simple Phonics</h1>
+          <h1 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Simple Phonics</h1>
           <div className="flex items-center gap-3">
             <WordLengthSlider value={wordLength} onChange={setWordLength} />
-            <button onClick={toggleDarkMode} className={`p-2.5 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-stone-200 text-stone-800 hover:bg-stone-300'}`} aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+            <button onClick={toggleDarkMode} className={`p-2.5 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-slate-200 text-slate-800 hover:bg-slate-300'}`} aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
