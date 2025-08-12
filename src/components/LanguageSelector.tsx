@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useTheme } from '../contexts/ThemeContext';
 
 interface LanguageSelectorProps {
   value: string;
@@ -8,7 +7,6 @@ interface LanguageSelectorProps {
 }
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ value, onChange }) => {
-  const { isDarkMode } = useTheme();
   const languages = [
     { code: 'en', flag: '🇺🇸', name: 'English' }
   ];
@@ -27,10 +25,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ value, onChange }) 
       onClick={toggleLanguage}
       className={`
         px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2
-        ${isDarkMode 
-          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
-          : 'bg-stone-200 text-stone-800 hover:bg-stone-300'
-        }
+        bg-stone-200 text-stone-800 hover:bg-stone-300
       `}
       aria-label={`Switch to next language`}
     >

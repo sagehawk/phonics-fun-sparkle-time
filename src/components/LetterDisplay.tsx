@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
 import { letterColors } from '../lib/colors';
 
 interface LetterDisplayProps {
@@ -33,7 +32,6 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   showTransliteration = false,
   transliteration = ''
 }) => {
-  const { isDarkMode } = useTheme();
   
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isLongPress, setIsLongPress] = useState(false);
@@ -218,9 +216,9 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           <div 
             data-letter-display
             className={`
-              text-7xl md:text-9xl lg:text-9xl xl:text-9xl font-bold
+              text-9xl md:text-9xl lg:text-9xl xl:text-9xl font-bold
               transition-all duration-300 ease-out
-              ${isDarkMode ? 'text-white' : 'text-gray-800'}
+              text-gray-800
               tracking-wider
               flex items-center justify-center
               ${isClickable ? 'cursor-pointer' : 'cursor-pointer'}
@@ -231,9 +229,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             style={{ 
               fontFamily: getFontFamily(),
               direction: getTextDirection(),
-              textShadow: isDarkMode 
-                ? '0 4px 20px rgba(255, 255, 255, 0.1)' 
-                : '0 4px 20px rgba(0, 0, 0, 0.1)',
+              textShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
               lineHeight: (language === 'ar' || language === 'fa') ? '1.2' : '0.8',
               display: 'flex',
               alignItems: 'center',
@@ -282,7 +278,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
             <div 
               className={`
                 text-lg md:text-xl lg:text-2xl font-medium
-                ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}
+                text-gray-600
                 text-center
               `}
               style={{
