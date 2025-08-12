@@ -21,9 +21,19 @@ export const useKeyboardControls = (
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toLowerCase();
 
+    // Helper for simple sequential navigation
+    const navigate = (direction: 'next' | 'prev') => {
+      if (words.length === 0) return;
+      const newIndex = direction === 'next'
+        ? (currentIndex + 1) % words.length
+        : (currentIndex - 1 + words.length) % words.length;
+      setCurrentIndex(newIndex);
+      onNewWord();
+    };
+
     if (['0', '1', '2', '3', '4'].includes(key)) {
-        setWordLength(Number(key));
-        return;
+      setWordLength(Number(key));
+      return;
     }
 
     if (event.key === 'Enter') {
@@ -38,98 +48,63 @@ export const useKeyboardControls = (
       return;
     }
 
-    // Arrow key navigation
-    if (wordLength === 0 || wordLength === 1) {
-      if (key === 'arrowright' || key === 'arrowdown') {
-        event.preventDefault();
-        if (words.length > 0) {
-          const newIndex = (currentIndex + 1) % words.length;
-          setCurrentIndex(newIndex);
-          onNewWord();
-        }
-        return;
-      }
-      if (key === 'arrowleft' || key === 'arrowup') {
-        event.preventDefault();
-        if (words.length > 0) {
-          const newIndex = (currentIndex - 1 + words.length) % words.length;
-          setCurrentIndex(newIndex);
-          onNewWord();
-        }
-        return;
-      }
+    // --- Arrow Key Navigation Logic ---
+
+    if (wordLength === 0) {
+      if (key === 'arrowright' || key === 'arrowdown') navigate('next');
+      if (key === 'arrowleft' || key === 'arrowup') navigate('prev');
+      return;
     }
 
-    if (wordLength === 2) {
-      if (key === 'arrowright' || key === 'arrowleft') {
-        event.preventDefault();
-        if (words.length > 0) {
-          const newIndex = (key === 'arrowright')
-            ? (currentIndex + 1) % words.length
-            : (currentIndex - 1 + words.length) % words.length;
-          setCurrentIndex(newIndex);
+    if (wordLength === 1) {
+      // For single letters mode, arrow keys navigate sequentially
+      if (key === 'arrowup' || key === 'arrowright') navigate('next');
+      if (key === 'arrowdown' || key === 'arrowleft') navigate('prev');
+      
+      // Also allow jumping directly to a letter
+      if (key.match(/^[a-z]$/)) {
+        const letterIndex = key.charCodeAt(0) - 97; // 'a' = 97
+        if (letterIndex !== currentIndex) {
+          setCurrentIndex(letterIndex);
           onNewWord();
         }
-        return;
       }
-      if (key === 'arrowup' || key === 'arrowdown') {
-        event.preventDefault();
-        if (words.length > 0) {
-          const currentWord = words[currentIndex];
-          const firstLetter = currentWord[0];
-          const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-          const firstLetterIndex = alphabet.indexOf(firstLetter.toLowerCase());
-          if (firstLetterIndex !== -1) {
-            const nextFirstLetterIndex = (key === 'arrowdown')
-              ? (firstLetterIndex + 1) % alphabet.length
-              : (firstLetterIndex - 1 + alphabet.length) % alphabet.length;
-            const nextFirstLetter = alphabet[nextFirstLetterIndex];
-            const newWord = (caseMode === 'uppercase' ? nextFirstLetter.toUpperCase() : nextFirstLetter) + currentWord.slice(1);
-            const newIndex = words.indexOf(newWord);
-            if (newIndex !== -1) {
-              setCurrentIndex(newIndex);
-              onNewWord();
-            }
-          }
-        }
-        return;
-      }
-    } else { // For wordLength 3 and 4
+      return;
+    }
+
+    // This block handles 2, 3, 4-letter words and beyond, ensuring their behavior is identical.
+    if (wordLength >= 2) {
+      event.preventDefault();
+
+      // Horizontal navigation (Left/Right Arrows)
       if (key === 'arrowright' || key === 'arrowleft') {
-        event.preventDefault();
-        if (words.length > 0) {
-          if (rhymeGroups) {
-            const currentWord = words[currentIndex];
-            const currentRhymeGroup = Object.values(rhymeGroups).find(group => group.includes(currentWord.toUpperCase()));
+        if (rhymeGroups) {
+          const currentWord = words[currentIndex];
+          const currentRhymeGroup = Object.values(rhymeGroups).find(group => group.includes(currentWord.toUpperCase()));
+          let newIndex = currentIndex;
 
-            let newIndex = currentIndex;
-            if (key === 'arrowright') {
-              do {
-                newIndex = (newIndex + 1) % words.length;
-              } while (currentRhymeGroup && currentRhymeGroup.includes(words[newIndex].toUpperCase()) && newIndex !== currentIndex);
-            } else { // arrowleft
-              do {
-                newIndex = (newIndex - 1 + words.length) % words.length;
-              } while (currentRhymeGroup && currentRhymeGroup.includes(words[newIndex].toUpperCase()) && newIndex !== currentIndex);
-            }
-            setCurrentIndex(newIndex);
-            onNewWord();
-          } else {
-            // Simple navigation
-            const newIndex = key === 'arrowright'
-              ? (currentIndex + 1) % words.length
-              : (currentIndex - 1 + words.length) % words.length;
-            setCurrentIndex(newIndex);
-            onNewWord();
+          if (key === 'arrowright') {
+            do {
+              newIndex = (newIndex + 1) % words.length;
+            } while (currentRhymeGroup && currentRhymeGroup.includes(words[newIndex].toUpperCase()) && newIndex !== currentIndex);
+          } else { // arrowleft
+            do {
+              newIndex = (newIndex - 1 + words.length) % words.length;
+            } while (currentRhymeGroup && currentRhymeGroup.includes(words[newIndex].toUpperCase()) && newIndex !== currentIndex);
           }
+          setCurrentIndex(newIndex);
+          onNewWord();
+        } else {
+          // Fallback to simple navigation if no rhyme data
+          navigate(key === 'arrowright' ? 'next' : 'prev');
         }
         return;
       }
 
+      // Vertical navigation (Up/Down Arrows)
       if (key === 'arrowup' || key === 'arrowdown') {
-        event.preventDefault();
         if (rhymeGroups) {
-          const nextRhyme = getNextRhyme();
+          const nextRhyme = getNextRhyme(); // Assuming getNextRhyme handles direction
           if (nextRhyme) {
             const nextIndex = words.indexOf(nextRhyme);
             if (nextIndex !== -1) {
@@ -137,29 +112,24 @@ export const useKeyboardControls = (
             }
           }
         } else {
-          // Simple navigation for up/down as well
-          const newIndex = key === 'arrowdown'
-            ? (currentIndex + 1) % words.length
-            : (currentIndex - 1 + words.length) % words.length;
-          setCurrentIndex(newIndex);
-          onNewWord();
+          // Fallback to simple navigation if no rhyme data
+          navigate(key === 'arrowdown' ? 'next' : 'prev');
         }
         return;
       }
     }
-
-    // Only respond to letter keys for single letter mode
-    if (!key.match(/^[a-z]$/) || wordLength !== 1) {
-      return;
-    }
-
-    // For single letters mode, jump directly to the letter
-    const letterIndex = key.charCodeAt(0) - 97; // 'a' = 97
-    if (letterIndex !== currentIndex) {
-      setCurrentIndex(letterIndex);
-      onNewWord();
-    }
-  }, [words, currentIndex, setCurrentIndex, wordLength, setWordLength, onNewWord, onConfetti, findRhymeGroup, getNextRhyme, toggleCaseMode, rhymeGroups]);
+  }, [
+    words,
+    currentIndex,
+    setCurrentIndex,
+    wordLength,
+    setWordLength,
+    onNewWord,
+    onConfetti,
+    getNextRhyme,
+    toggleCaseMode,
+    rhymeGroups
+  ]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

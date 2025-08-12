@@ -81,13 +81,7 @@ const PhonicsApp: React.FC = () => { // Force reload
     ? (content[currentIndex] || '').toLowerCase()
     : content[currentIndex] || '';
 
-  useEffect(() => {
-    if (currentDisplayText) {
-      findRhymeGroup(currentDisplayText);
-    }
-  }, [currentDisplayText, findRhymeGroup]);
-
-  const handleRhymeCycle = () => {
+  const handleCycleFirstLetter = () => {
     const nextRhyme = getNextRhyme();
     if (nextRhyme) {
       const nextIndex = content.indexOf(nextRhyme);
@@ -96,6 +90,36 @@ const PhonicsApp: React.FC = () => { // Force reload
       }
     }
   };
+
+  const handleCycleWholeWord = (e: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>) => {
+    setShowImage(false);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
+    const clickX = x - rect.left;
+
+    if (rhymeGroups) {
+      const currentWord = content[currentIndex];
+      const currentRhymeGroup = Object.values(rhymeGroups).find(group => group.includes(currentWord.toUpperCase()));
+
+      let newIndex = currentIndex;
+      if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
+        do {
+          newIndex = (newIndex - 1 + content.length) % content.length;
+        } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
+      } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
+        do {
+          newIndex = (newIndex + 1) % content.length;
+        } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
+        }
+      setCurrentIndex(newIndex);
+    }
+  };
+
+  useEffect(() => {
+    if (currentDisplayText) {
+      findRhymeGroup(currentDisplayText);
+    }
+  }, [currentDisplayText, findRhymeGroup]);
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -128,40 +152,19 @@ const PhonicsApp: React.FC = () => { // Force reload
       return;
     }
 
-    setShowImage(false);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
-    const clickX = x - rect.left;
-
     if (wordLength === 0 || wordLength === 1) {
-      if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
-        setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
-      } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
-      }
-    } else if (wordLength === 2) { // Explicitly handle 2-letter words
-      if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
-        setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
-      } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
-      }
-    } else { // For wordLength 3 and 4
-      if (rhymeGroups) {
-        const currentWord = content[currentIndex];
-        const currentRhymeGroup = Object.values(rhymeGroups).find(group => group.includes(currentWord.toUpperCase()));
+      setShowImage(false);
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
+      const clickX = x - rect.left;
 
-        let newIndex = currentIndex;
-        if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
-          do {
-            newIndex = (newIndex - 1 + content.length) % content.length;
-          } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
-        } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
-          do {
-            newIndex = (newIndex + 1) % content.length;
-          } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
-          }
-        setCurrentIndex(newIndex);
+      if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
+      } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
       }
+    } else { // For wordLength 2, 3 and 4
+      handleCycleFirstLetter();
     }
   };
 
@@ -214,15 +217,15 @@ const PhonicsApp: React.FC = () => { // Force reload
           paddingBottom: '2vh',
           minHeight: 'calc(100vh - 120px)'
         }}
-        onClick={handleInteraction}
-        onTouchEnd={handleInteraction}
+        onClick={handleCycleWholeWord}
+        onTouchEnd={handleCycleWholeWord}
       >
         <LetterDisplay
           text={currentDisplayText}
           showConfetti={showConfetti}
           showImage={showImage}
           imageData={currentImageData}
-          onLetterAreaClick={handleRhymeCycle}
+          onLetterAreaClick={handleInteraction}
           onLetterLongPress={handleLetterLongPress}
           isClickable={true}
           language={language}
