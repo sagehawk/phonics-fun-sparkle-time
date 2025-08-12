@@ -264,18 +264,20 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
               ) : (
                 // For English, keep individual letters
                 <div
-                  className="flex items-baseline"
+                  className="flex justify-center"
                   style={{
                     direction: getTextDirection(),
                     gap: '0.1em'
                   }}
                 >
-                  <span
-                    className="inline-block w-[1.2em] text-right"
-                    style={{ color: letterColors[text.charAt(0).toUpperCase()] }}
-                  >
-                    {text.charAt(0)}
-                  </span>
+                  <div className="w-40 text-right">
+                    <span
+                      className="relative"
+                      style={{ color: letterColors[text.charAt(0).toUpperCase()] }}
+                    >
+                      {text.charAt(0)}
+                    </span>
+                  </div>
                   <span>{text.substring(1)}</span>
                 </div>
               )

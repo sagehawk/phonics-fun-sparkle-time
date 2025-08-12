@@ -11,31 +11,27 @@ export const useKeyboardControls = (
   findRhymeGroup: (word: string) => void,
   getNextRhyme: () => string | undefined,
 ) => {
-  const [caseMode, setCaseMode] = useState<'uppercase' | 'lowercase'>('uppercase'); // Start with uppercase
+  const [caseMode, setCaseMode] = useState<'uppercase' | 'lowercase'>('uppercase');
 
   const toggleCaseMode = useCallback(() => {
     setCaseMode(prev => prev === 'lowercase' ? 'uppercase' : 'lowercase');
-    // Don't play navigation sound for case toggle - it's a different action
   }, []);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toLowerCase();
 
-    // Handle number keys to change word length
     if (['1', '2', '3', '4'].includes(key)) {
-      setWordLength(Number(key));
-      return;
+        setWordLength(Number(key));
+        return;
     }
 
-    // Handle Enter key for confetti
-    if (key === 'enter') {
+    if (event.key === 'Enter') {
       event.preventDefault();
       onConfetti();
       return;
     }
 
-    // Toggle case mode with Shift key (for any word length)
-    if (key === 'shift') {
+    if (event.key === 'Shift') {
       event.preventDefault();
       toggleCaseMode();
       return;
@@ -44,17 +40,21 @@ export const useKeyboardControls = (
     // Arrow key navigation
     if (key === 'arrowright') {
       event.preventDefault();
-      const newIndex = (currentIndex + 1) % words.length;
-      setCurrentIndex(newIndex);
-      onNewWord();
+      if (words.length > 0) {
+        const newIndex = (currentIndex + 1) % words.length;
+        setCurrentIndex(newIndex);
+        onNewWord();
+      }
       return;
     }
 
     if (key === 'arrowleft') {
       event.preventDefault();
-      const newIndex = (currentIndex - 1 + words.length) % words.length;
-      setCurrentIndex(newIndex);
-      onNewWord();
+      if (words.length > 0) {
+        const newIndex = (currentIndex - 1 + words.length) % words.length;
+        setCurrentIndex(newIndex);
+        onNewWord();
+      }
       return;
     }
 
@@ -81,7 +81,7 @@ export const useKeyboardControls = (
       setCurrentIndex(letterIndex);
       onNewWord();
     }
-  }, [words, currentIndex, setCurrentIndex, wordLength, setWordLength, onNewWord, toggleCaseMode, onConfetti, findRhymeGroup, getNextRhyme]);
+  }, [words, currentIndex, setCurrentIndex, wordLength, setWordLength, onNewWord, onConfetti, findRhymeGroup, getNextRhyme, toggleCaseMode]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

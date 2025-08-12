@@ -14,7 +14,6 @@ import Instructions from './Instructions';
 // Constants for magic numbers
 const PREVIOUS_ITEM_CLICK_AREA = 0.4;
 const NEXT_ITEM_CLICK_AREA = 0.6;
-const MOBILE_WIDTH_THRESHOLD = 768;
 
 const PhonicsApp: React.FC = () => {
   const {
