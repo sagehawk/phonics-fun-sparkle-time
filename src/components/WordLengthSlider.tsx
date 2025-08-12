@@ -11,7 +11,7 @@ const WordLengthSlider: React.FC<WordLengthSliderProps> = ({ value, onChange }) 
   const { isDarkMode } = useTheme();
   return (
     <div className="flex items-center gap-2">
-      {[1, 2, 3, 4].map((level) => (
+      {[0, 1, 2, 3, 4].map((level) => (
         <button
           key={level}
           onClick={() => onChange(level)}

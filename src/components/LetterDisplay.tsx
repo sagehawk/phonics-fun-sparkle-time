@@ -34,17 +34,13 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
   transliteration = ''
 }) => {
   const { isDarkMode } = useTheme();
-  const [isAnimating, setIsAnimating] = useState(false);
+  
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isLongPress, setIsLongPress] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTouchDistance = useRef<number | null>(null);
 
-  useEffect(() => {
-    setIsAnimating(true);
-    const timer = setTimeout(() => setIsAnimating(false), 300);
-    return () => clearTimeout(timer);
-  }, [text]);
+  
 
   // Improved zoom functionality that works anywhere on screen
   useEffect(() => {
@@ -222,9 +218,8 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           <div 
             data-letter-display
             className={`
-              text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold
+              text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold
               transition-all duration-300 ease-out
-              ${isAnimating ? 'scale-110 opacity-80' : 'scale-100 opacity-100'}
               ${isDarkMode ? 'text-white' : 'text-gray-800'}
               tracking-wider
               flex items-center justify-center
@@ -263,22 +258,22 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
                 <span className="arabic-connected">{text}</span>
               ) : (
                 // For English, keep individual letters
-                <div 
-                  className="flex" 
-                  style={{ 
-                    direction: getTextDirection(), 
+                <div
+                  className="flex justify-center"
+                  style={{
+                    direction: getTextDirection(),
                     gap: '0.1em'
                   }}
                 >
-                  {text.split('').map((char, index) => (
+                  <div className="w-40 text-right">
                     <span
-                      key={index}
                       className="relative"
-                      style={{ color: index === 0 ? letterColors[char.toUpperCase()] : 'inherit' }}
+                      style={{ color: letterColors[text.charAt(0).toUpperCase()] }}
                     >
-                      {char}
+                      {text.charAt(0)}
                     </span>
-                  ))}
+                  </div>
+                  <span>{text.substring(1)}</span>
                 </div>
               )
             ) : null}

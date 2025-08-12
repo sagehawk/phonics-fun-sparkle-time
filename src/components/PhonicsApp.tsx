@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import LetterDisplay from './LetterDisplay';
 import WordLengthSlider from './WordLengthSlider';
-import LanguageSelector from './LanguageSelector';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { useImageAPI } from '../hooks/useImageAPI';
 import { usePhonics } from '../hooks/usePhonics';
@@ -14,12 +13,8 @@ import Instructions from './Instructions';
 // Constants for magic numbers
 const PREVIOUS_ITEM_CLICK_AREA = 0.4;
 const NEXT_ITEM_CLICK_AREA = 0.6;
-const BASE_MAX_ZOOM = 8;
-const MOBILE_MAX_ZOOM_FACTOR = 0.6;
-const TRANSLITERATION_MAX_ZOOM_FACTOR = 0.7;
-const MOBILE_WIDTH_THRESHOLD = 768;
 
-const PhonicsApp: React.FC = () => {
+const PhonicsApp: React.FC = () => { // Force reload
   const {
     language,
     setLanguage,
@@ -33,20 +28,14 @@ const PhonicsApp: React.FC = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(3);
   const [showImage, setShowImage] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [showTransliteration, setShowTransliteration] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleConfettiTrigger = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
     setShowConfetti(true);
-
     setTimeout(() => {
       setShowConfetti(false);
-      setIsAnimating(false);
     }, 2000);
   };
 
@@ -63,11 +52,15 @@ const PhonicsApp: React.FC = () => {
     currentIndex,
     setCurrentIndex,
     wordLength,
+    setWordLength,
     () => {
       setShowImage(false);
       playNavigationAudio();
     },
-    handleConfettiTrigger
+    handleConfettiTrigger,
+    findRhymeGroup,
+    getNextRhyme,
+    rhymeGroups
   );
 
   const { fetchImage } = useImageAPI();
@@ -82,13 +75,6 @@ const PhonicsApp: React.FC = () => {
     } catch (error) {
       console.error('Error fetching image:', error);
     }
-  };
-
-  const getMaxZoom = () => {
-    const lengthFactor = wordLength === 1 ? 1 : wordLength === 2 ? 0.8 : wordLength === 3 ? 0.6 : 0.4;
-    const transliterationFactor = ((language === 'ar' || language === 'fa') && showTransliteration) ? TRANSLITERATION_MAX_ZOOM_FACTOR : 1;
-    const mobileFactor = window.innerWidth <= MOBILE_WIDTH_THRESHOLD ? MOBILE_MAX_ZOOM_FACTOR : 1; // Smaller max zoom on mobile
-    return BASE_MAX_ZOOM * lengthFactor * transliterationFactor * mobileFactor;
   };
 
   const currentDisplayText = (language === 'en' && caseMode === 'lowercase')
@@ -115,10 +101,6 @@ const PhonicsApp: React.FC = () => {
     setCurrentIndex(0);
     setShowImage(false);
     setShowTransliteration(false);
-    const maxZoom = getMaxZoom();
-    if (zoomLevel > maxZoom) {
-      setZoomLevel(maxZoom);
-    }
   }, [wordLength, language]);
 
   useEffect(() => {
@@ -151,35 +133,28 @@ const PhonicsApp: React.FC = () => {
     const x = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
     const clickX = x - rect.left;
 
-    if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA || clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
+    if (wordLength === 2) { // Explicitly handle 2-letter words
+      if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
+      } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
+      }
+    } else { // For wordLength 3 and 4
       if (rhymeGroups) {
-        const allRhymeGroups = Object.values(rhymeGroups);
-        if (allRhymeGroups.length === 0) return;
+        const currentWord = content[currentIndex];
+        const currentRhymeGroup = Object.values(rhymeGroups).find(group => group.includes(currentWord.toUpperCase()));
 
-        const currentGroup = allRhymeGroups.find(group => group.includes(content[currentIndex].toUpperCase()));
-        const currentGroupIndex = currentGroup ? allRhymeGroups.indexOf(currentGroup) : -1;
-
-        let nextRhymeGroupIndex;
+        let newIndex = currentIndex;
         if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
-          nextRhymeGroupIndex = (currentGroupIndex - 1 + allRhymeGroups.length) % allRhymeGroups.length;
-        } else {
-          nextRhymeGroupIndex = (currentGroupIndex + 1) % allRhymeGroups.length;
-        }
-
-        const nextRhymeGroup = allRhymeGroups[nextRhymeGroupIndex];
-        const nextWord = nextRhymeGroup[0];
-        const nextIndex = content.findIndex(word => word.toUpperCase() === nextWord.toUpperCase());
-
-        if (nextIndex !== -1) {
-          setCurrentIndex(nextIndex);
-        }
-      } else {
-        // Fallback for no rhymes
-        if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
-          setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
+          do {
+            newIndex = (newIndex - 1 + content.length) % content.length;
+          } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
         } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
-          setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
-        }
+          do {
+            newIndex = (newIndex + 1) % content.length;
+          } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
+          }
+        setCurrentIndex(newIndex);
       }
     }
   };
@@ -208,10 +183,7 @@ const PhonicsApp: React.FC = () => {
               onChange={setWordLength}
             />
 
-            <LanguageSelector
-              value={language}
-              onChange={setLanguage}
-            />
+            
 
             <button
               onClick={toggleDarkMode}
@@ -242,14 +214,11 @@ const PhonicsApp: React.FC = () => {
         <LetterDisplay
           text={currentDisplayText}
           showConfetti={showConfetti}
-          zoomLevel={zoomLevel}
-          onZoomChange={(level) => setZoomLevel(Math.min(level, getMaxZoom()))}
           showImage={showImage}
           imageData={currentImageData}
           onLetterAreaClick={handleRhymeCycle}
           onLetterLongPress={handleLetterLongPress}
           isClickable={true}
-          maxZoom={getMaxZoom()}
           language={language}
           showTransliteration={showTransliteration}
           transliteration={content[currentIndex] ? getTransliteration(content[currentIndex]) : ''}

@@ -1,8 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import enData from '../data/en.json';
-import arData from '../data/ar.json';
-import faData from '../data/fa.json';
 
 type LanguageData = {
   letters: string[] | string;
@@ -13,8 +11,6 @@ type LanguageData = {
 
 const languageData: Record<string, LanguageData> = {
   en: enData,
-  ar: arData,
-  fa: faData,
 };
 
 export const usePhonics = () => {
@@ -28,13 +24,14 @@ export const usePhonics = () => {
     if (data) {
       let newContent: string[] = [];
       if (wordLength === 1) {
-        newContent = Array.isArray(data.letters) ? data.letters : data.letters.split('');
+        const letters = data.letters || [];
+        newContent = Array.isArray(letters) ? letters : letters.split('');
       } else {
         const rhymesForLength = data.rhymes?.[wordLength];
         if (rhymesForLength) {
           newContent = Object.values(rhymesForLength).flat();
         } else {
-          newContent = data.words[wordLength] || [];
+          newContent = data.words?.[wordLength] || [];
         }
       }
       setContent(newContent);
