@@ -10,9 +10,7 @@ interface LanguageSelectorProps {
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ value, onChange }) => {
   const { isDarkMode } = useTheme();
   const languages = [
-    { code: 'en', flag: '🇺🇸', name: 'English' },
-    { code: 'ar', flag: '🇸🇦', name: 'العربية' },
-    { code: 'fa', flag: '🇮🇷', name: 'فارسی' }
+    { code: 'en', flag: '🇺🇸', name: 'English' }
   ];
 
   const currentIndex = languages.findIndex(lang => lang.code === value);

@@ -24,5 +24,15 @@ export const letterColors: { [key: string]: string } = {
   W: '#d18b3f',
   X: '#d1c43f',
   Y: '#8bd13f',
-  Z: '#3fd18b'
+  Z: '#3fd18b',
+  '1': '#d14f4f', // Red
+  '2': '#d18b3f', // Orange
+  '3': '#d1c44f', // Yellow
+  '4': '#a3d14f', // Light Green
+  '5': '#4fd16e', // Green
+  '6': '#4fd1a3', // Teal
+  '7': '#4f9ad1', // Light Blue
+  '8': '#4f4fd1', // Blue
+  '9': '#9a4fd1', // Purple
+  '0': '#d14f9a' // Pink (for 0, if needed, though user asked for 1-9)
 };

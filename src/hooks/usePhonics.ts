@@ -1,8 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import enData from '../data/en.json';
-import arData from '../data/ar.json';
-import faData from '../data/fa.json';
 
 type LanguageData = {
   letters: string[] | string;
@@ -13,8 +11,6 @@ type LanguageData = {
 
 const languageData: Record<string, LanguageData> = {
   en: enData,
-  ar: arData,
-  fa: faData,
 };
 
 export const usePhonics = () => {

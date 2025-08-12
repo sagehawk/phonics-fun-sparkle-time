@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import LetterDisplay from './LetterDisplay';
 import WordLengthSlider from './WordLengthSlider';
-import LanguageSelector from './LanguageSelector';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
 import { useImageAPI } from '../hooks/useImageAPI';
 import { usePhonics } from '../hooks/usePhonics';
@@ -15,7 +14,7 @@ import Instructions from './Instructions';
 const PREVIOUS_ITEM_CLICK_AREA = 0.4;
 const NEXT_ITEM_CLICK_AREA = 0.6;
 
-const PhonicsApp: React.FC = () => {
+const PhonicsApp: React.FC = () => { // Force reload
   const {
     language,
     setLanguage,
@@ -60,7 +59,8 @@ const PhonicsApp: React.FC = () => {
     },
     handleConfettiTrigger,
     findRhymeGroup,
-    getNextRhyme
+    getNextRhyme,
+    rhymeGroups
   );
 
   const { fetchImage } = useImageAPI();
@@ -133,35 +133,28 @@ const PhonicsApp: React.FC = () => {
     const x = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
     const clickX = x - rect.left;
 
-    if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA || clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
+    if (wordLength === 2) { // Explicitly handle 2-letter words
+      if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
+      } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
+      }
+    } else { // For wordLength 3 and 4
       if (rhymeGroups) {
-        const allRhymeGroups = Object.values(rhymeGroups);
-        if (allRhymeGroups.length === 0) return;
+        const currentWord = content[currentIndex];
+        const currentRhymeGroup = Object.values(rhymeGroups).find(group => group.includes(currentWord.toUpperCase()));
 
-        const currentGroup = allRhymeGroups.find(group => group.includes(content[currentIndex].toUpperCase()));
-        const currentGroupIndex = currentGroup ? allRhymeGroups.indexOf(currentGroup) : -1;
-
-        let nextRhymeGroupIndex;
+        let newIndex = currentIndex;
         if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
-          nextRhymeGroupIndex = (currentGroupIndex - 1 + allRhymeGroups.length) % allRhymeGroups.length;
-        } else {
-          nextRhymeGroupIndex = (currentGroupIndex + 1) % allRhymeGroups.length;
-        }
-
-        const nextRhymeGroup = allRhymeGroups[nextRhymeGroupIndex];
-        const nextWord = nextRhymeGroup[0];
-        const nextIndex = content.findIndex(word => word.toUpperCase() === nextWord.toUpperCase());
-
-        if (nextIndex !== -1) {
-          setCurrentIndex(nextIndex);
-        }
-      } else {
-        // Fallback for no rhymes
-        if (clickX < rect.width * PREVIOUS_ITEM_CLICK_AREA) {
-          setCurrentIndex((prevIndex) => (prevIndex - 1 + content.length) % content.length);
+          do {
+            newIndex = (newIndex - 1 + content.length) % content.length;
+          } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
         } else if (clickX > rect.width * NEXT_ITEM_CLICK_AREA) {
-          setCurrentIndex((prevIndex) => (prevIndex + 1) % content.length);
-        }
+          do {
+            newIndex = (newIndex + 1) % content.length;
+          } while (currentRhymeGroup && currentRhymeGroup.includes(content[newIndex].toUpperCase()) && newIndex !== currentIndex);
+          }
+        setCurrentIndex(newIndex);
       }
     }
   };
@@ -190,10 +183,7 @@ const PhonicsApp: React.FC = () => {
               onChange={setWordLength}
             />
 
-            <LanguageSelector
-              value={language}
-              onChange={setLanguage}
-            />
+            
 
             <button
               onClick={toggleDarkMode}

@@ -10,6 +10,7 @@ export const useKeyboardControls = (
   onConfetti: () => void,
   findRhymeGroup: (word: string) => void,
   getNextRhyme: () => string | undefined,
+  rhymeGroups: { [key: string]: string[] } | null,
 ) => {
   const [caseMode, setCaseMode] = useState<'uppercase' | 'lowercase'>('uppercase');
 
@@ -20,7 +21,7 @@ export const useKeyboardControls = (
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toLowerCase();
 
-    if (['1', '2', '3', '4'].includes(key)) {
+    if (['0', '1', '2', '3', '4'].includes(key)) {
         setWordLength(Number(key));
         return;
     }
@@ -38,36 +39,91 @@ export const useKeyboardControls = (
     }
 
     // Arrow key navigation
-    if (key === 'arrowright') {
-      event.preventDefault();
-      if (words.length > 0) {
-        const newIndex = (currentIndex + 1) % words.length;
-        setCurrentIndex(newIndex);
-        onNewWord();
-      }
-      return;
-    }
-
-    if (key === 'arrowleft') {
-      event.preventDefault();
-      if (words.length > 0) {
-        const newIndex = (currentIndex - 1 + words.length) % words.length;
-        setCurrentIndex(newIndex);
-        onNewWord();
-      }
-      return;
-    }
-
-    if (key === 'arrowup' || key === 'arrowdown') {
-      event.preventDefault();
-      const nextRhyme = getNextRhyme();
-      if (nextRhyme) {
-        const nextIndex = words.indexOf(nextRhyme);
-        if (nextIndex !== -1) {
-          setCurrentIndex(nextIndex);
+    if (wordLength === 0 || wordLength === 1) {
+      if (key === 'arrowright' || key === 'arrowdown') {
+        event.preventDefault();
+        if (words.length > 0) {
+          const newIndex = (currentIndex + 1) % words.length;
+          setCurrentIndex(newIndex);
+          onNewWord();
         }
+        return;
       }
-      return;
+      if (key === 'arrowleft' || key === 'arrowup') {
+        event.preventDefault();
+        if (words.length > 0) {
+          const newIndex = (currentIndex - 1 + words.length) % words.length;
+          setCurrentIndex(newIndex);
+          onNewWord();
+        }
+        return;
+      }
+    }
+
+    if (wordLength === 2) { // Explicitly handle 2-letter words
+      if (key === 'arrowright' || key === 'arrowleft' || key === 'arrowup' || key === 'arrowdown') {
+        event.preventDefault();
+        if (words.length > 0) {
+          const newIndex = (key === 'arrowright' || key === 'arrowdown')
+            ? (currentIndex + 1) % words.length
+            : (currentIndex - 1 + words.length) % words.length;
+          setCurrentIndex(newIndex);
+          onNewWord();
+        }
+        return;
+      }
+    } else { // For wordLength 3 and 4
+      if (key === 'arrowright' || key === 'arrowleft') {
+        event.preventDefault();
+        if (words.length > 0) {
+          if (rhymeGroups) {
+            const currentWord = words[currentIndex];
+            const currentRhymeGroup = Object.values(rhymeGroups).find(group => group.includes(currentWord.toUpperCase()));
+
+            let newIndex = currentIndex;
+            if (key === 'arrowright') {
+              do {
+                newIndex = (newIndex + 1) % words.length;
+              } while (currentRhymeGroup && currentRhymeGroup.includes(words[newIndex].toUpperCase()) && newIndex !== currentIndex);
+            } else { // arrowleft
+              do {
+                newIndex = (newIndex - 1 + words.length) % words.length;
+              } while (currentRhymeGroup && currentRhymeGroup.includes(words[newIndex].toUpperCase()) && newIndex !== currentIndex);
+            }
+            setCurrentIndex(newIndex);
+            onNewWord();
+          } else {
+            // Simple navigation
+            const newIndex = key === 'arrowright'
+              ? (currentIndex + 1) % words.length
+              : (currentIndex - 1 + words.length) % words.length;
+            setCurrentIndex(newIndex);
+            onNewWord();
+          }
+        }
+        return;
+      }
+
+      if (key === 'arrowup' || key === 'arrowdown') {
+        event.preventDefault();
+        if (rhymeGroups) {
+          const nextRhyme = getNextRhyme();
+          if (nextRhyme) {
+            const nextIndex = words.indexOf(nextRhyme);
+            if (nextIndex !== -1) {
+              setCurrentIndex(nextIndex);
+            }
+          }
+        } else {
+          // Simple navigation for up/down as well
+          const newIndex = key === 'arrowdown'
+            ? (currentIndex + 1) % words.length
+            : (currentIndex - 1 + words.length) % words.length;
+          setCurrentIndex(newIndex);
+          onNewWord();
+        }
+        return;
+      }
     }
 
     // Only respond to letter keys for single letter mode
@@ -81,7 +137,7 @@ export const useKeyboardControls = (
       setCurrentIndex(letterIndex);
       onNewWord();
     }
-  }, [words, currentIndex, setCurrentIndex, wordLength, setWordLength, onNewWord, onConfetti, findRhymeGroup, getNextRhyme, toggleCaseMode]);
+  }, [words, currentIndex, setCurrentIndex, wordLength, setWordLength, onNewWord, onConfetti, findRhymeGroup, getNextRhyme, toggleCaseMode, rhymeGroups]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
