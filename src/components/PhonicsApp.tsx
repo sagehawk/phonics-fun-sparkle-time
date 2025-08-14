@@ -7,6 +7,7 @@ import { useImageAPI } from '../hooks/useImageAPI';
 import { usePhonics } from '../hooks/usePhonics';
 import { useRhymes } from '../hooks/useRhymes';
 import { useTheme } from '../contexts/ThemeContext';
+import { useIsMobile } from '../hooks/use-mobile';
 import { audioData } from '../data/audio';
 import Instructions from './Instructions';
 
@@ -25,6 +26,7 @@ const PhonicsApp: React.FC = () => {
   } = usePhonics();
   
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const isMobile = useIsMobile();
   const { findRhymeGroup, getNextRhyme, rhymeGroups } = useRhymes(language, wordLength);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -186,8 +188,8 @@ const PhonicsApp: React.FC = () => {
       <main
         className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative"
         style={{ paddingTop: '2vh', paddingBottom: '2vh', minHeight: 'calc(100vh - 120px)' }}
-        onClick={handleBackgroundInteraction} // <--- FIX: Correct handler for background clicks
-        onTouchEnd={handleBackgroundInteraction} // <--- FIX: Correct handler for background touches
+        onClick={!isMobile ? handleBackgroundInteraction : undefined}
+        onTouchEnd={isMobile ? handleBackgroundInteraction : undefined}
       >
         <LetterDisplay
           text={finalDisplayText}
