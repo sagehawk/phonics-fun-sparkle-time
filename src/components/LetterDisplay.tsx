@@ -187,6 +187,19 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
     return (language === 'ar' || language === 'fa') ? parts.reverse() : parts;
   };
 
+  const getFontSizeClass = (textLength: number) => {
+    if (textLength <= 1) {
+      return 'text-[15rem] md:text-[20rem]';
+    }
+    if (textLength <= 4) {
+      return 'text-[8rem] md:text-[12rem]';
+    }
+    if (textLength <= 8) {
+      return 'text-[6rem] md:text-[8rem]';
+    }
+    return 'text-[4rem] md:text-[6rem]';
+  };
+
   const transliterationParts = getTransliterationParts();
 
   return (
@@ -218,7 +231,7 @@ const LetterDisplay: React.FC<LetterDisplayProps> = ({
           <div 
             data-letter-display
             className={`
-              text-8xl md:text-9xl lg:text-9xl xl:text-9xl font-bold
+              ${getFontSizeClass(text.length)} font-bold
               transition-all duration-300 ease-out
               ${isDarkMode ? 'text-white' : 'text-gray-800'}
               tracking-wider
