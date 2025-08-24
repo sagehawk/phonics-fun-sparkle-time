@@ -194,7 +194,6 @@ const PhonicsApp: React.FC = () => {
         className="flex-grow flex flex-col items-center justify-center p-4 min-h-0 relative"
         style={{ paddingTop: '2vh', paddingBottom: '2vh', minHeight: 'calc(100vh - 120px)' }}
         onClick={handleBackgroundInteraction} // <--- FIX: Correct handler for background clicks
-        onTouchEnd={handleBackgroundInteraction} // <--- FIX: Correct handler for background touches
       >
         <LetterDisplay
           text={finalDisplayText}
