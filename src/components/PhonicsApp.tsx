@@ -9,6 +9,7 @@ import { useRhymes } from '../hooks/useRhymes';
 import { useTheme } from '../contexts/ThemeContext';
 import { audioData } from '../data/audio';
 import Instructions from './Instructions';
+import { speak } from '../lib/tts';
 
 // Constants for click areas
 const PREVIOUS_ITEM_CLICK_AREA = 0.4;
@@ -90,6 +91,12 @@ const PhonicsApp: React.FC = () => {
   useEffect(() => {
     playNavigationAudio();
   }, [currentIndex]);
+
+  useEffect(() => {
+    if (currentDisplayText) {
+      speak(currentDisplayText);
+    }
+  }, [currentDisplayText]);
 
   // --- Interaction and Display Logic ---
   const searchImage = async (text: string) => {
